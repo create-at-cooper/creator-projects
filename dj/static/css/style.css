@@ -5,6 +5,7 @@ html, body {
 
 input[type="submit"] {
 	background-color: LightGray;
+	border: 4px solid gray;
 }
 
 a:link, a:visited {

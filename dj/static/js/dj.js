@@ -1,5 +1,6 @@
 var tests = [];
 var votes;
+var maxFiles = 5;
 
 function addTest(test, append) {
 	append = append === undefined ? false : append;
@@ -126,10 +127,10 @@ function dropAction(event) {
 }
 
 function handleFiles(files) {
-	for ( var i = 0, f; f = files[i]; i++) {
+	for (var i = 0, f; f = files[i]; i++) {
 
-		// Only process image files.
-		if (!f.type.match('image.*')) {
+		// Only process small image files.
+		if (!f.type.match('image.*') || f.size > 1048576) {
 			continue;
 		}
 
@@ -139,6 +140,10 @@ function handleFiles(files) {
 
 		reader.onloadend = handleReaderLoadEnd;
 		reader.readAsDataURL(f);
+		
+		if (artFiles.length >= maxFiles) {
+			break;
+		}
 	}
 }
 
@@ -160,7 +165,7 @@ function handleReaderLoadEnd(event) {
 
 	// TODO: screws up if you have the same image more than once
 	$('#choices .remove').click(function() {
-		for ( var i = 0; i < artFiles.length; i++) {
+		for (var i = 0; i < artFiles.length; i++) {
 			if (artFiles[i].data == $(this).next("img").attr("src")) {
 				artFiles.splice(i, 1);
 				$(this).parent().remove();
@@ -168,10 +173,6 @@ function handleReaderLoadEnd(event) {
 				break;
 			}
 		}
-	});
-
-	artFiles.push({
-		data : event.target.result
 	});
 }
 
@@ -181,7 +182,7 @@ $(function() {
 
 		data.append("question", $("#question").val());
 		
-		for ( var i = 0; i < artFiles.length; i++) {
+		for (var i = 0; i < artFiles.length && i < maxFiles; i++) {
 			data.append(i, artFiles[i]);
 		}
 
@@ -196,6 +197,7 @@ $(function() {
 				// empty list of files
 				$('#choices').empty();
 				$('#question').val('');
+				$("#fileselect").val('')
 				artFiles = [];
 				
 				data = $.parseJSON(data);

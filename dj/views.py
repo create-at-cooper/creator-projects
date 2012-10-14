@@ -86,7 +86,17 @@ def post_test(request):
     
     test = Test.objects.create(question=request.POST.get('question', ''))
     
+    count = 0
+    
     for key, f in request.FILES.items(): #@UnusedVariable
+        if f.size > 1048576:
+            continue
+        
+        count += 1
+        
+        if count > 5:
+            break
+        
         c = Choice(test=test)
         
         c.image.save(f.name, f, save=True)
