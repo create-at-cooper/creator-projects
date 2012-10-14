@@ -81,30 +81,18 @@ function vote(choice) {
 	choice.div.addClass("chosen");
 	$('<span>').addClass('votes').html(choice.votes).appendTo(choice.div);
 	$(choice.div).parent().addClass("voted");
+	$('#error').empty();
 }
-
-$(function() {
-	loadTests();
-	loadVotes();
-})
 
 // FILE STUFF
 
 var artFiles = [];
 var loaded = [];
 
-// init event handlers
-
-// drag + drop
-$(function() {
-	$('#dropbox').get(0).addEventListener("drop", dropAction, false);
-	$('#dropbox').get(0).addEventListener("dragover", function(evt) {
-		evt.stopPropagation();
-		evt.preventDefault();
-	}, false);
-
-	$('#fileselect').get(0).addEventListener("change", handleFileSelect, false);
-});
+function displayError(message) {
+	$('#error').append($('<li>').addClass('error').html(message));
+	$('#error').show();
+}
 
 function handleFileSelect(event) {
 	var files = event.target.files;
@@ -115,9 +103,11 @@ function handleFileSelect(event) {
 		handleFiles(files)
 }
 
-function dropAction(event) {
+function dropAction(event) {	
 	event.stopPropagation();
 	event.preventDefault();
+	
+	$(this).removeClass("dropover");
 
 	var files = event.dataTransfer.files;
 	var count = files.length;
@@ -128,13 +118,19 @@ function dropAction(event) {
 }
 
 function handleFiles(files) {
+	$('#error').empty();
+	
 	$.each(files, function(i, file){
 		// Only process small image files.
-		if (!file.type.match('image.*') || file.size > 1048576) {
+		if (!file.type.match('image.*')) {
+			displayError(file.name + " is not a recognized image file!");
 			return;
 		}
-
-		artFiles.push(file);
+		
+		if (file.size > 1048576) {
+			displayError(file.name + " is too large!");
+			return;
+		}
 		
 		var reader = new FileReader();
 
@@ -143,13 +139,23 @@ function handleFiles(files) {
 		};
 		reader.readAsDataURL(file);
 		
-		if (artFiles.length >= maxFiles) {
-			return;
-		}
+		reader.onabort = function() {
+			displayError("Reading of " + file.name + " cancelled!");
+		};
+		reader.onerror = function() {
+			displayError("Error reading " + file.name + "!");
+		};
 	});
 }
 
 function handleReaderLoadEnd(image, event) {
+	if (artFiles.length >= maxFiles) {
+		displayError("Image limit reached.");
+		return;
+	}
+	
+	artFiles.push(image);
+	
 	var uchoice = $('<div class="uchoice" style="margin: 2pt; display: inline-block; position: relative; overflow: hidden; width: 160px"></div>').append(
 			'<div class="remove"' +
 					'style="color: gray; position: absolute; top: -8px; right: 0px; height: 25px"><table cellspacing="0" cellpadding="0" style="font-family: arial, sans-serif; font-size: 28px;"><tbody><tr><td>&#215;</td></tr></tbody></table></div><img style="width:160px" src="'
@@ -168,7 +174,33 @@ function handleReaderLoadEnd(image, event) {
 }
 
 $(function() {
+	loadTests();
+	loadVotes();
+	
+	$('#dropbox').get(0).addEventListener("drop", dropAction, false);
+	$('#dropbox').get(0).addEventListener("dragover", function(evt) {		
+		evt.stopPropagation();
+		evt.preventDefault();
+	}, false);
+	
+	$('#dropbox').get(0).addEventListener("dragenter", function(evt) {
+		$(this).addClass("dropover");
+	}, false);
+	
+	$('#dropbox').get(0).addEventListener("dragleave", function(evt) {
+		$(this).removeClass("dropover");
+	}, false);
+
+	$('#fileselect').get(0).addEventListener("change", handleFileSelect, false);
+	
 	$('#ask').submit(function(e) {
+		e.preventDefault();
+		
+		if (artFiles.length < 2) {
+			displayError("We need multiple choices!");
+			return;
+		}
+		
 		var data = new FormData();
 
 		data.append("question", $("#question").val());
@@ -184,24 +216,28 @@ $(function() {
 			processData: false,
 			contentType: false,
 			type: "POST",
-			success: function(data) {
-				// empty list of files
-				$('#choices').empty();
-				$('#question').val('');
-				$("#fileselect").val('')
-				artFiles = [];
-				
+			success: function(data) {				
 				data = $.parseJSON(data);
-				addTest(data.test);
+				
+				if (data.status == 'OK') {
+					// empty list of files
+					$('#choices').empty();
+					$('#question').val('');
+					$("#fileselect").val('');
+					artFiles = [];
+					
+					$('#error').empty();
+					
+					addTest(data.test);
+				} else {
+					displayError(data.status);
+				}
+				
 			}
 		});
-		
-		e.preventDefault();
 	});
 	
-	// TODO: screws up if you have the same image more than once
-	$('#choices').on('click', '.remove', function() {
-		
+	$('#choices').on('click', '.remove', function() {	
 		for (var i = 0; i < artFiles.length; i++) {
 			if ($(this).parent().data("image") == artFiles[i]) {
 				artFiles.splice(i, 1);
@@ -209,7 +245,6 @@ $(function() {
 				break;
 			}
 		}
-		
 	});
 	
 	$('#tests').on('click', '.choice', function() {
@@ -229,18 +264,13 @@ $(function() {
 	});
 	
 	$(window).scroll(function(e) {
-
 		// Check if we reached bottom of the document
 		if( $(window).height() + $(window).scrollTop() >= $('#main').offset().top + $('#main').height() ) {
 			loadTests($('#tests .test').last().data("test").id, true);
 		}
 	});
+	
+	$('#error').on('click', '.error', function() {
+		$(this).remove();
+	});
 })
-
-function uploadFailed(event) {
-	alert("There was an error attempting to upload the file.");
-}
-
-function uploadCanceled(event) {
-	alert("The upload has been canceled by the user or the browser dropped the connection.");
-}

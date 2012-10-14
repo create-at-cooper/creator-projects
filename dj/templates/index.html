@@ -24,6 +24,8 @@
 
 </script>
 
+<title>pickt</title>
+
 </head>
 
 <body>
@@ -38,16 +40,18 @@
 
 	<form id="ask">
 		<input name="question" id="question" autofocus maxlength="140" placeholder="which is your favorite?"/>
-		<input type="submit" id="submit" value="ask"></button>
+		<input type="submit" id="submit" value="ask"></input>
 	
 		<div id="dropbox">
 		<input type="file" id="fileselect" name="files[]" multiple />
+		
 		<div id="choices"></div>
 		</div>
-		
 	</form>
 	
-	<ul id="tests"></li>
+	<ul id="error"></ul>
+	
+	<ul id="tests"></ul>
 
 </div>
 

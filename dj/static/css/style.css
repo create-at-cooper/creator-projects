@@ -29,6 +29,28 @@ h1 {
 	margin-bottom: 8pt;
 }
 
+#error {
+	display: none;
+	width: 100%;
+	
+	font-family: 'Montserrat Alternates', sans-serif;
+	font-size: 14pt;
+	font-weight: 500;
+	color: white;
+}
+
+.error {
+	padding: 10pt;
+	margin-top: 10pt;
+	margin-bottom: 10pt;
+	
+	background-color: #E04D6B;
+}
+
+.error:hover {
+	background-color: LightGray;
+}
+
 #attr {
 	position: absolute;
 	top: 0px;
@@ -69,6 +91,10 @@ ul, li {
 	
 	background-color: LightGray;
 	position: relative;
+}
+
+#dropbox.dropover {
+	background-color: #29BE27;
 }
 
 #question {
@@ -153,7 +179,7 @@ ul, li {
 .choices:not(.voted) .choice:hover, .chosen {
 	padding-top: 0pt;
 	padding-bottom: 20pt;
-	background-color: green;
+	background-color: #29BE27;
 }
 
 .chosen {
