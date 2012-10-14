@@ -1,8 +1,13 @@
 var tests = [];
 var votes;
+var before;
 
-function addTest(test) {
-	var testDiv = $("<li>").addClass("test");
+function addTest(test, append) {
+	append = append === undefined ? false : append;
+	
+	var testDiv = $("<li>").addClass("test").data("test", test);
+	if (!test.question || test.question.length < 2)
+		test.question = "Which is your favorite?";
 	testDiv.append($("<div>").addClass("question").html(test.question));
 	
 	var choices = $("<div>").addClass("choices");
@@ -16,16 +21,33 @@ function addTest(test) {
 	});
 	
 	testDiv.append(choices);
-	$("#tests").prepend(testDiv);
+	if (append) {
+		$("#tests").append(testDiv);
+	} else {
+		$("#tests").prepend(testDiv);
+	}
+	
 }
 
-function loadTests(since_id) {
-	since_id = since_id === undefined ? 0 : since_id;
+function loadTests(before_id, append) {
+	var getData = {};
+	
+	if (before_id !== undefined) {
+		getData.before_id = before_id;
+		
+		if (before_id == before)
+			return;
+		
+		before = before_id;
+	}
+	append = append === undefined ? false : append;
 
-	$.getJSON("/api/test", {
-		since_id : since_id
-	}, function(data) {
+	$.getJSON("/api/test", getData, function(data) {
 		tests = tests.concat(data);
+		
+		if (!append) {
+			data.reverse()
+		}
 		
 		$.each(data, function(i, test) {
 			addTest(test);
@@ -180,6 +202,7 @@ $(function() {
 				// empty list of files
 				$('#choices').empty();
 				$('#question').val('');
+				artFiles = [];
 				
 				data = $.parseJSON(data);
 				addTest(data.test);
@@ -203,6 +226,14 @@ $(function() {
 				vote(choice);
 			}
 		});
+	});
+	
+	$(window).scroll(function(e) {
+
+		// Check if we reached bottom of the document
+		if( $(window).height() + $(window).scrollTop() >= $('#main').offset().top + $('#main').height() ) {
+			loadTests($('#tests .test').last().data("test").id, true);
+		}
 	});
 })
 

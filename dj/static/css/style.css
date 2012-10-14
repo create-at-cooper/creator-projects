@@ -3,6 +3,10 @@ html, body {
 	padding: 0px;
 }
 
+input[type="submit"] {
+	background-color: LightGray;
+}
+
 a:link, a:visited {
 	text-decoration: none;
 	color: black;

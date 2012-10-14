@@ -62,8 +62,11 @@ def get_test(request):
     elif 'since_id' in request.GET:
         since_id = request.GET['since_id']
         tests = tests.filter(pk__gt=since_id)
+    elif 'before_id' in request.GET:
+        before_id = request.GET['before_id']
+        tests = tests.filter(pk__lt=before_id)
     
-    tests = tests.order_by('pub_date')
+    tests = tests.order_by('-pub_date')
         
     offset = int(request.GET.get('offset', '0'))
     limit = int(request.GET.get('limit', '5')) 
