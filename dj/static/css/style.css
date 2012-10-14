@@ -1,0 +1,131 @@
+html, body {
+	margin: 4pt;
+	padding: 0px;
+}
+
+a:link, a:visited {
+	text-decoration: none;
+	color: black;
+}
+
+h1 {
+	font-family: 'Montserrat Alternates', sans-serif;
+	font-weight: 900;
+	
+	font-size: 48pt;
+	color: black;
+	
+	margin-top: 8pt;
+	margin-bottom: 8pt;
+}
+
+div, input {
+	margin: 0px;
+	padding: 0px;
+}
+
+ul, li {
+	list-decoration: none;
+	margin: 0px;
+	padding: 0px;
+}
+
+#choices {
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	padding: 15px;
+}
+
+#dropbox {
+	height: 200px;
+	width: 100%;
+	display: inline-block;
+	
+	background-color: LightGray;
+	position: relative;
+}
+
+#question {
+	font-size: 24pt;
+	
+	font-family: 'Montserrat Alternates', sans-serif;
+	font-weight: 500;
+	
+	margin-top: 12px;
+	margin-bottom: 12px;
+	
+	width: 84%;
+}
+
+#submit {
+	font-size: 24pt;
+	
+	font-family: 'Montserrat Alternates', sans-serif;
+	font-weight: 900;
+	
+	padding-left: 12px;
+	padding-right: 12px;
+	
+	width: 14%;
+}
+
+#fileselect {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	right: 0px;
+	
+	margin-top: 0px;
+	margin-bottom: 0px;
+	background-color: gray;
+	
+	font-size: 18pt;
+	
+	font-family: 'Montserrat Alternates', sans-serif;
+	font-weight: 900;
+	
+	padding: 15px;
+}
+
+.test {
+	padding-top: 2%;
+}
+
+.question {
+	font-size: 24pt;
+	
+	font-family: 'Montserrat Alternates', sans-serif;
+	font-weight: 500;
+	
+	background-color: LightGray;
+	
+	padding-left: 1%;
+	padding-top: 2pt;
+	padding-bottom: 2pt;
+	
+	margin-bottom: 2px;
+}
+
+.choices {
+	line-height: 1;
+	max-width: 1200px;	
+}
+
+.choice {
+	display: inline-block;
+	max-width: 500px;
+	padding-top: 2%;
+}
+
+.choice img {
+	width: 100%;
+	display: block;
+}
+
+.choices:not(.voted) .choice:hover, .chosen {
+	padding-top: 0%;
+	padding-bottom: 2%;
+	background-color: green;
+	cursor: pointer;
+}
