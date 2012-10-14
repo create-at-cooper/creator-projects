@@ -1,24 +1,55 @@
 var tests = [];
 var votes;
 var maxFiles = 5;
+var disableScroll = false;
 
 function addTest(test, append) {
 	append = append === undefined ? false : append;
 	
 	var testDiv = $("<li>").addClass("test").data("test", test);
+	
 	if (!test.question || test.question.length < 2)
 		test.question = "Which is your favorite?";
-	testDiv.append($("<div>").addClass("question").html(test.question));
+	
+	var question = $("<div>").addClass("question");
+	question.append($('<a>').attr('href', '?test=' + test.id).html(test.question));
+	
+	if (test.results) {
+		question.html(question.html() + " (results)");
+	}
+	
+	if (test.key) {
+		question.append($("<a>").attr('href', '?test=' + test.id + '&key=' + test.key).addClass("save").html(" (link to see results)"));
+	}
+	testDiv.append(question);
 	
 	var choices = $("<div>").addClass("choices");
 	
-	$.each(test.choices, function(j, choice) {
+	// tally up total number of votes
+	if (test.results) {
+		var totalVotes = 0;
+		
+		$.each(test.choices, function(j, choice) {
+			totalVotes += parseInt(choice.votes, 10);
+		});
+	}
+	
+	$.each(test.choices, function(j, choice) {		
 		choice.div = $("<div>").addClass("choice").css("width", 100 / test.choices.length + "%");
 		$("<img>").attr("src", choice.image).appendTo(choice.div);
-	
+		
 		choices.append(choice.div);
 		choice.div.data("choice", choice);
+		
+		if (choice.votes && test.results) {
+			
+			choice.div.addClass("results");
+			$("<div>").addClass("votes-bar").css("width", 100 * parseInt(choice.votes, 10) / totalVotes + "%").appendTo(choice.div);
+			vote(choice);
+		}
 	});
+	
+	
 	
 	testDiv.append(choices);
 	if (append) {
@@ -27,6 +58,26 @@ function addTest(test, append) {
 		$("#tests").prepend(testDiv);
 	}
 	
+}
+
+function loadTest(id, key) {
+	var getData = {id: id};
+	
+	if (key !== undefined) {
+		getData.key = key;
+	}
+	
+	$.getJSON("/api/test", getData, function(data) {
+		tests = tests.concat(data);
+		
+		$.each(data, function(i, test) {
+			addTest(test, false);
+		});
+		
+		if (votes) {
+			markVotes();
+		}
+	});
 }
 
 function loadTests(before_id, append) {
@@ -58,7 +109,7 @@ function loadVotes() {
 	$.getJSON("/api/vote", function(data) {
 		votes = data.votes;
 		
-		if (tests) {
+		if (tests.length > 0) {
 			markVotes();
 		}
 	});
@@ -174,7 +225,32 @@ function handleReaderLoadEnd(image, event) {
 }
 
 $(function() {
-	loadTests();
+	function getParameterByName(name) {
+		// http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values
+	    var match = RegExp('[?&]' + name + '=([^&]*)')
+	                    .exec(window.location.search);
+	    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+	}
+	
+	var test = getParameterByName("test");
+	if (test) {
+		var key = getParameterByName("key");
+		if (key)
+			loadTest(test, key);
+		else
+			loadTest(test);
+		
+		$('#ask').hide();
+	} else {
+		loadTests();
+		
+		$(window).scroll(function(e) {
+			// Check if we reached bottom of the document
+			if( $(window).height() + $(window).scrollTop() >= $('#main').offset().top + $('#main').height() ) {
+				loadTests($('#tests .test').last().data("test").id, true);
+			}
+		});
+	}
 	loadVotes();
 	
 	$('#dropbox').get(0).addEventListener("drop", dropAction, false);
@@ -202,8 +278,7 @@ $(function() {
 		}
 		
 		var data = new FormData();
-
-		data.append("question", $("#question").val());
+		data.append('question', $('#question').val());
 		
 		for (var i = 0; i < artFiles.length && i < maxFiles; i++) {
 			data.append(i, artFiles[i]);
@@ -261,13 +336,6 @@ $(function() {
 				vote(choice);
 			}
 		});
-	});
-	
-	$(window).scroll(function(e) {
-		// Check if we reached bottom of the document
-		if( $(window).height() + $(window).scrollTop() >= $('#main').offset().top + $('#main').height() ) {
-			loadTests($('#tests .test').last().data("test").id, true);
-		}
 	});
 	
 	$('#error').on('click', '.error', function() {

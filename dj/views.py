@@ -12,40 +12,60 @@ def get_votes_for_choices(choices):
     
     for choice in choices:
         list_choices.append({
-                             'id' : choice.id,
-                             'votes' : choice.votes
+                             'id': choice.id,
+                             'votes': choice.votes
                              })
         
     return list_choices
         
 
-def list_choices(choices):
+def list_choices(choices, votes=False):
     list_choices = []
-    for choice in choices:
-        
-        list_choices.append({
-                             'id' : choice.pk,
-                             'image': choice.image.url
-                             })
+    
+    if votes:
+        for choice in choices:    
+            list_choices.append({
+                                 'id': choice.pk,
+                                 'image': choice.image.url,
+                                 'votes': choice.votes
+                                 })
+    else:
+        for choice in choices:    
+            list_choices.append({
+                                 'id' : choice.pk,
+                                 'image': choice.image.url
+                                 })
         
     return list_choices
 
-def dict_test(test):
-    return {'id' : test.pk, 
-            'pub_date' : str(test.pub_date),
-            'question' : test.question,
-            'choices' : list_choices(test.choices.all())}
+def dict_test(test, votes=False, key=False):
+    t = {'id': test.pk, 
+         'pub_date': str(test.pub_date),
+         'question': test.question,
+         'choices': list_choices(test.choices.all(), votes)
+         }
+    
+    if key:
+        t['key'] = test.key
+        
+    if votes:
+        t['results'] = True
+    
+    return t
 
-def list_tests(tests):
+def list_tests(tests, keys=[]):
     """Returns a serialized string of the given tests."""
     list_tests = [] # empty list of choices
-    for test in tests:
-        list_tests.append(dict_test(test))
+    for i, test in enumerate(tests):
+        if i < len(keys) and unicode(test.key) == unicode(keys[i]):
+            list_tests.append(dict_test(test, True))
+        else:
+            list_tests.append(dict_test(test))
         
     return list_tests
 
-def serialize_tests(tests):
-    return json.dumps(list_tests(tests));
+def serialize_tests(tests, keys=[]):
+    return json.dumps(list_tests(tests, keys));
 
 def test(request):
     if request.method == "POST":
@@ -55,7 +75,21 @@ def test(request):
 
 def get_test(request):
     tests = Test.objects.all()
+    keys = []
         
+    if 'id' in request.GET:
+        ids = request.GET['id']
+        if len(ids) > 0:
+            pk = [int(n) for n in ids.split(',')]
+            tests = tests.filter(pk__in=pk)
+        else:
+            return HttpResponse([])
+                
+        if 'key' in request.GET:
+            keys = request.GET['key']
+            if len(keys) > 0:
+                keys = [n for n in keys.split(',')]
+   
     if 'since' in request.GET:
         since = datetime.datetime.strptime(request.GET['since'], '%Y-%m-%d %H:%M:%SZ')
         tests = tests.filter(creation_date__gt=since)
@@ -72,7 +106,7 @@ def get_test(request):
     limit = int(request.GET.get('limit', '5')) 
     tests = tests[offset : offset + limit]
     
-    return HttpResponse(serialize_tests(tests), mimetype="application/json") # Send data back to the user.
+    return HttpResponse(serialize_tests(tests, keys), mimetype="application/json") # Send data back to the user.
 
 @csrf_exempt
 def post_test(request):
@@ -102,7 +136,7 @@ def post_test(request):
         c.image.save(f.name, f, save=True)
         c.save()
         
-    result['test'] = dict_test(test)
+    result['test'] = dict_test(test, key=True)
     
     if test.pk == 1:
         salt = str(Test.objects.get(pk=1).pub_date)
