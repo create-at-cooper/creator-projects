@@ -91,6 +91,7 @@ $(function() {
 // FILE STUFF
 
 var artFiles = [];
+var loaded = [];
 
 // init event handlers
 
@@ -127,31 +128,33 @@ function dropAction(event) {
 }
 
 function handleFiles(files) {
-	for (var i = 0, f; f = files[i]; i++) {
-
+	$.each(files, function(i, file){
 		// Only process small image files.
-		if (!f.type.match('image.*') || f.size > 1048576) {
-			continue;
+		if (!file.type.match('image.*') || file.size > 1048576) {
+			return;
 		}
 
-		artFiles.push(f);
-
+		artFiles.push(file);
+		
 		var reader = new FileReader();
 
-		reader.onloadend = handleReaderLoadEnd;
-		reader.readAsDataURL(f);
+		reader.onloadend = function(event) {
+			handleReaderLoadEnd(file, event);
+		};
+		reader.readAsDataURL(file);
 		
 		if (artFiles.length >= maxFiles) {
-			break;
+			return;
 		}
-	}
+	});
 }
 
-function handleReaderLoadEnd(event) {
-	$('#choices')
-			.append(
-					'<div style="margin: 2pt; display: inline-block; position: relative; overflow: hidden; width: 160px"><div class="remove" style="color: gray; position: absolute; top: -8px; right: 0px; height: 25px"><table cellspacing="0" cellpadding="0" style="font-family: arial, sans-serif; font-size: 28px;"><tbody><tr><td>&#215;</td></tr></tbody></table></div><img style="width:160px" src="'
-							+ event.target.result + '"/></div>');
+function handleReaderLoadEnd(image, event) {
+	var uchoice = $('<div class="uchoice" style="margin: 2pt; display: inline-block; position: relative; overflow: hidden; width: 160px"></div>').append(
+			'<div class="remove"' +
+					'style="color: gray; position: absolute; top: -8px; right: 0px; height: 25px"><table cellspacing="0" cellpadding="0" style="font-family: arial, sans-serif; font-size: 28px;"><tbody><tr><td>&#215;</td></tr></tbody></table></div><img style="width:160px" src="'
+							+ event.target.result + '"/>').data("image", image);
+	$('#choices').append(uchoice);
 
 	$('#choices .remove').hover(function() {
 		$(this).css("cursor", "pointer");
@@ -161,18 +164,6 @@ function handleReaderLoadEnd(event) {
 		$(this).css("cursor", "auto");
 		$(this).css("color", "gray");
 		$(this).css("background", "transparent");
-	});
-
-	// TODO: screws up if you have the same image more than once
-	$('#choices .remove').click(function() {
-		for (var i = 0; i < artFiles.length; i++) {
-			if (artFiles[i].data == $(this).next("img").attr("src")) {
-				artFiles.splice(i, 1);
-				$(this).parent().remove();
-
-				break;
-			}
-		}
 	});
 }
 
@@ -206,6 +197,19 @@ $(function() {
 		});
 		
 		e.preventDefault();
+	});
+	
+	// TODO: screws up if you have the same image more than once
+	$('#choices').on('click', '.remove', function() {
+		
+		for (var i = 0; i < artFiles.length; i++) {
+			if ($(this).parent().data("image") == artFiles[i]) {
+				artFiles.splice(i, 1);
+				$(this).parent().remove();
+				break;
+			}
+		}
+		
 	});
 	
 	$('#tests').on('click', '.choice', function() {
