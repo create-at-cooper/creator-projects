@@ -1,5 +1,6 @@
 # Create your views here.
 from dj.models import Test, Choice
+from django.core.signing import BadSignature
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import datetime
@@ -90,6 +91,12 @@ def post_test(request):
         
     result['test'] = dict_test(test)
     
+    if test.pk == 1:
+        salt = str(Test.objects.get(pk=1).pub_date)
+        response = HttpResponse(json.dumps(result))
+        response.set_signed_cookie('chosen', json.dumps([]), salt=salt)
+        return response
+    
     return HttpResponse(json.dumps(result))
 
 def vote(request):
@@ -107,9 +114,13 @@ def get_vote(request):
         result['message'] = 'Internal error.'
         return HttpResponse(json.dumps(result))
     
-    result['votes'] = get_votes_for_choices(json.loads(request.get_signed_cookie('chosen', default='[]', salt=salt)))
+    chosen = request.get_signed_cookie('chosen', default='[]', salt=salt)
+    result['votes'] = get_votes_for_choices(json.loads(chosen))
     
-    return HttpResponse(json.dumps(result))
+    response = HttpResponse(json.dumps(result))
+    response.set_signed_cookie('chosen', chosen, salt=salt)
+    
+    return response
 
 @csrf_exempt
 def post_vote(request):
@@ -128,7 +139,13 @@ def post_vote(request):
         result['message'] = 'Internal error.'
         return HttpResponse(json.dumps(result))
     
-    chosen = json.loads(request.get_signed_cookie('chosen', default='[]', salt=salt))
+    silentFailure = False
+    
+    try:
+        chosen = json.loads(request.get_signed_cookie('chosen', salt=salt))
+    except BadSignature:
+        silentFailure = True
+        chosen = []
     
     choice_id = request.POST.get('choice')
     
@@ -146,11 +163,14 @@ def post_vote(request):
         result['message'] = 'You voted on this already!'
         return HttpResponse(json.dumps(result))
     
-    choice.votes += 1
-    choice.save()
+    if not silentFailure:
+        choice.votes += 1
+        choice.save()
+        result['votes'] = choice.votes
+    else:
+        result['votes'] = choice.votes + 1
     
     result['id'] = choice.id
-    result['votes'] = choice.votes
     
     chosen.append(choice.id)
      

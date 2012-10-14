@@ -129,7 +129,7 @@ function handleFiles(files) {
 function handleReaderLoadEnd(event) {
 	$('#choices')
 			.append(
-					'<div style="margin: 2px; display: inline-block; position: relative; overflow: hidden; width: 160px"><div class="remove" style="color: gray; position: absolute; top: -8px; right: 0px; height: 25px"><table cellspacing="0" cellpadding="0" style="font-family: arial, sans-serif; font-size: 28px;"><tbody><tr><td>&#215;</td></tr></tbody></table></div><img style="width:160px" src="'
+					'<div style="margin: 2pt; display: inline-block; position: relative; overflow: hidden; width: 160px"><div class="remove" style="color: gray; position: absolute; top: -8px; right: 0px; height: 25px"><table cellspacing="0" cellpadding="0" style="font-family: arial, sans-serif; font-size: 28px;"><tbody><tr><td>&#215;</td></tr></tbody></table></div><img style="width:160px" src="'
 							+ event.target.result + '"/></div>');
 
 	$('#choices .remove').hover(function() {
@@ -148,9 +148,6 @@ function handleReaderLoadEnd(event) {
 			if (artFiles[i].data == $(this).next("img").attr("src")) {
 				artFiles.splice(i, 1);
 				$(this).parent().remove();
-
-				if (frame.art >= artFiles.length)
-					frame.art = 0;
 
 				break;
 			}
@@ -193,7 +190,12 @@ $(function() {
 	});
 	
 	$('#tests').on('click', '.choice', function() {
+		// make sure we haven't voted on this already
+		if ($(this).parent().hasClass("voted"))
+			return;
+		
 		var choice = $(this).data("choice");
+		
 		$.post("/api/vote", {choice: choice.id}, function(data) {
 			data = $.parseJSON(data);
 			choice.votes = data.votes;

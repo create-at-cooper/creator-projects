@@ -31,14 +31,13 @@ ul, li {
 }
 
 #choices {
-	position: absolute;
-	left: 0px;
-	bottom: 0px;
-	padding: 15px;
+	padding: 10pt;
+	
+	margin-top: 48pt;
 }
 
 #dropbox {
-	height: 200px;
+	min-height: 180px;
 	width: 100%;
 	display: inline-block;
 	
@@ -55,7 +54,7 @@ ul, li {
 	margin-top: 12px;
 	margin-bottom: 12px;
 	
-	width: 84%;
+	width: 84.5%;
 }
 
 #submit {
@@ -85,7 +84,7 @@ ul, li {
 	font-family: 'Montserrat Alternates', sans-serif;
 	font-weight: 900;
 	
-	padding: 15px;
+	padding: 10pt;
 }
 
 .test {
