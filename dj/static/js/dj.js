@@ -1,6 +1,5 @@
 var tests = [];
 var votes;
-var before;
 
 function addTest(test, append) {
 	append = append === undefined ? false : append;
@@ -34,11 +33,6 @@ function loadTests(before_id, append) {
 	
 	if (before_id !== undefined) {
 		getData.before_id = before_id;
-		
-		if (before_id == before)
-			return;
-		
-		before = before_id;
 	}
 	append = append === undefined ? false : append;
 
@@ -50,7 +44,7 @@ function loadTests(before_id, append) {
 		}
 		
 		$.each(data, function(i, test) {
-			addTest(test);
+			addTest(test, append);
 		});
 		
 		if (votes) {
