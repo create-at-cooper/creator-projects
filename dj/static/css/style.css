@@ -115,7 +115,9 @@ ul, li {
 .choice {
 	display: inline-block;
 	max-width: 500px;
-	padding-top: 2%;
+	padding-top: 20pt;
+	
+	color: white;
 }
 
 .choice img {
@@ -124,8 +126,26 @@ ul, li {
 }
 
 .choices:not(.voted) .choice:hover, .chosen {
-	padding-top: 0%;
-	padding-bottom: 2%;
+	padding-top: 0pt;
+	padding-bottom: 20pt;
 	background-color: green;
+}
+
+.chosen {
+	position: relative;
+	text-align: center;
+}
+
+.choices:not(.voted) .choice:hover {
 	cursor: pointer;
+}
+
+.votes {
+	position: absolute;
+	right: 0px;
+	padding: 1pt 4pt 1pt 4pt;
+	
+	font-family: 'Montserrat Alternates', sans-serif;
+	font-weight: 500;
+	font-size: 16pt;
 }

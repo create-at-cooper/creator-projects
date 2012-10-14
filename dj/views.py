@@ -5,6 +5,19 @@ from django.views.decorators.csrf import csrf_exempt
 import datetime
 import json
 
+def get_votes_for_choices(choices):
+    choices = Choice.objects.filter(id__in=choices)
+    list_choices = []
+    
+    for choice in choices:
+        list_choices.append({
+                             'id' : choice.id,
+                             'votes' : choice.votes
+                             })
+        
+    return list_choices
+        
+
 def list_choices(choices):
     list_choices = []
     for choice in choices:
@@ -94,7 +107,8 @@ def get_vote(request):
         result['message'] = 'Internal error.'
         return HttpResponse(json.dumps(result))
     
-    result['votes'] = json.loads(request.get_signed_cookie('chosen', default='[]', salt=salt))
+    result['votes'] = get_votes_for_choices(json.loads(request.get_signed_cookie('chosen', default='[]', salt=salt)))
+    
     return HttpResponse(json.dumps(result))
 
 @csrf_exempt
@@ -125,20 +139,20 @@ def post_vote(request):
         result['message'] = 'Choice not found.'
         return HttpResponse(json.dumps(result))
     
-    test_ids = [choice.id for choice in choice.test.choices.all()]
+    test_ids = [c.id for c in choice.test.choices.all()]
     
     if set(test_ids) & set(chosen):
         result['status'] = 'FORBIDDEN'
         result['message'] = 'You voted on this already!'
         return HttpResponse(json.dumps(result))
     
-    choice.votes += 1;
-    choice.save();
+    choice.votes += 1
+    choice.save()
     
-    result['id'] = choice_id;
-    result['votes'] = choice.votes;
+    result['id'] = choice.id
+    result['votes'] = choice.votes
     
-    chosen.append(int(choice_id))
+    chosen.append(choice.id)
      
     response = HttpResponse(json.dumps(result))
     response.set_signed_cookie('chosen', json.dumps(chosen), salt=salt)

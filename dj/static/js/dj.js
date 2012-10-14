@@ -51,7 +51,8 @@ function markVotes() {
 	$.each(votes, function(i, v) {
 		$.each(tests, function(j, test) {
 			$.each(test.choices, function(k, choice) {
-				if (v == choice.id) {
+				if (v.id == choice.id) {
+					choice.votes = v.votes;
 					vote(choice);
 				}
 			});
@@ -61,6 +62,7 @@ function markVotes() {
 
 function vote(choice) {
 	choice.div.addClass("chosen");
+	$('<span>').addClass('votes').html(choice.votes).appendTo(choice.div);
 	$(choice.div).parent().addClass("voted");
 }
 
@@ -194,6 +196,7 @@ $(function() {
 		var choice = $(this).data("choice");
 		$.post("/api/vote", {choice: choice.id}, function(data) {
 			data = $.parseJSON(data);
+			choice.votes = data.votes;
 			if (data.status == "OK") {
 				vote(choice);
 			}
