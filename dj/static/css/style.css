@@ -1,6 +1,11 @@
 html, body {
-	margin: 4pt;
 	padding: 0px;
+	margin: 0px;
+}
+
+body {
+	position: relative;
+	margin: 8pt;
 }
 
 input[type="submit"] {
@@ -22,6 +27,22 @@ h1 {
 	
 	margin-top: 8pt;
 	margin-bottom: 8pt;
+}
+
+#attr {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	
+	font-family: 'Montserrat Alternates', sans-serif;
+	font-size: 14pt;
+	font-weight: 500;
+	color: LightGray;
+}
+
+#attr a:link, #attr a:visited {
+	text-decoration: none;
+	color: gray;
 }
 
 div, input {
