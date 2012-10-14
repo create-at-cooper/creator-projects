@@ -20,6 +20,11 @@ import dj_database_url
 
 if os.environ.get('LOCAL_DEV', 'True') == 'False':
     DATABASES = {'default': dj_database_url.config(default='postgres://localhost')}
+    STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID');
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY');
+    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME');
 else:
     DATABASES = {
         'default': {

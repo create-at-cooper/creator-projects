@@ -86,8 +86,15 @@ def vote(request):
         return get_vote(request)
 
 def get_vote(request):
-    result = {'status' : 'OK',
-              'votes' : json.loads(request.get_signed_cookie('chosen', default='[]'))}
+    result = {'status' : 'OK'}
+    
+    salt = str(Test.objects.get(pk=1).pub_date)
+    if not salt:
+        result['status'] = 'ERROR'
+        result['message'] = 'Internal error.'
+        return HttpResponse(json.dumps(result))
+    
+    result['votes'] = json.loads(request.get_signed_cookie('chosen', default='[]', salt=salt))
     return HttpResponse(json.dumps(result))
 
 @csrf_exempt
@@ -101,7 +108,13 @@ def post_vote(request):
         result['message'] = 'Need to choose to vote!'
         return HttpResponse(json.dumps(result))
     
-    chosen = json.loads(request.get_signed_cookie('chosen', default='[]'));
+    salt = str(Test.objects.get(pk=1).pub_date)
+    if not salt:
+        result['status'] = 'ERROR'
+        result['message'] = 'Internal error.'
+        return HttpResponse(json.dumps(result))
+    
+    chosen = json.loads(request.get_signed_cookie('chosen', default='[]', salt=salt))
     
     choice_id = request.POST.get('choice')
     
@@ -112,7 +125,9 @@ def post_vote(request):
         result['message'] = 'Choice not found.'
         return HttpResponse(json.dumps(result))
     
-    if set([choice.id for choice in choice.test.choices.all()]) & set(chosen):
+    test_ids = [choice.id for choice in choice.test.choices.all()]
+    
+    if set(test_ids) & set(chosen):
         result['status'] = 'FORBIDDEN'
         result['message'] = 'You voted on this already!'
         return HttpResponse(json.dumps(result))
@@ -123,9 +138,9 @@ def post_vote(request):
     result['id'] = choice_id;
     result['votes'] = choice.votes;
     
-    chosen.append(choice_id)
+    chosen.append(int(choice_id))
      
     response = HttpResponse(json.dumps(result))
-    response.set_signed_cookie('chosen', json.dumps(chosen))
+    response.set_signed_cookie('chosen', json.dumps(chosen), salt=salt)
     
     return response
