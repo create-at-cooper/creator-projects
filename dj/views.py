@@ -103,7 +103,7 @@ def post_vote(request):
     
     chosen = json.loads(request.get_signed_cookie('chosen', default='[]'));
     
-    choice_id = request.POST.get('choice')        
+    choice_id = request.POST.get('choice')
     
     try:
         choice = Choice.objects.get(pk=choice_id)
@@ -120,10 +120,10 @@ def post_vote(request):
     choice.votes += 1;
     choice.save();
     
-    result['id'] = choice.id;
+    result['id'] = choice_id;
     result['votes'] = choice.votes;
     
-    chosen.append(choice.id)
+    chosen.append(choice_id)
      
     response = HttpResponse(json.dumps(result))
     response.set_signed_cookie('chosen', json.dumps(chosen))

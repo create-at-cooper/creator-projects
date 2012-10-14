@@ -192,9 +192,11 @@ $(function() {
 	
 	$('#tests').on('click', '.choice', function() {
 		var choice = $(this).data("choice");
-		$.post("/api/vote", {choice: choice.id}, function(data) {			
-			if (data.status == "OK")
+		$.post("/api/vote", {choice: choice.id}, function(data) {
+			data = $.parseJSON(data);
+			if (data.status == "OK") {
 				vote(choice);
+			}
 		});
 	});
 })
