@@ -25,6 +25,12 @@ if os.environ.get('LOCAL_DEV', 'True') == 'False':
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID');
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY');
     AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME');
+    
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_pylibmc.memcached.PyLibMCCache'
+        }
+    }
 else:
     DATABASES = {
         'default': {
