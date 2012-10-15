@@ -33,6 +33,8 @@ if os.environ.get('LOCAL_DEV', 'True') == 'False':
     }
     
     STATIC_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com/'
+    
+    DEBUG = False
 else:
     DATABASES = {
         'default': {
