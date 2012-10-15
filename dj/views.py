@@ -3,9 +3,10 @@ from dj.models import Test, Choice
 from django.core.signing import BadSignature
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from judge import settings
+import collections
 import datetime
 import json
-import collections
 
 def get_votes_for_choices(choices):
     choices = Choice.objects.filter(id__in=choices)
@@ -157,7 +158,7 @@ def post_test(request):
     if test.pk == 1:
         salt = str(Test.objects.get(pk=1).pub_date)
         response = HttpResponse(json.dumps(result))
-        response.set_signed_cookie('chosen', json.dumps([]), salt=salt)
+        response.set_signed_cookie('chosen', json.dumps([]), max_age=settings.SESSION_COOKIE_AGE, salt=salt)
         return response
     
     return HttpResponse(json.dumps(result))
@@ -181,7 +182,7 @@ def get_vote(request):
     result['votes'] = get_votes_for_choices(json.loads(chosen))
     
     response = HttpResponse(json.dumps(result))
-    response.set_signed_cookie('chosen', chosen, salt=salt)
+    response.set_signed_cookie('chosen', chosen, max_age=settings.SESSION_COOKIE_AGE, salt=salt)
     
     return response
 
@@ -238,6 +239,6 @@ def post_vote(request):
     chosen.append(choice.id)
      
     response = HttpResponse(json.dumps(result))
-    response.set_signed_cookie('chosen', json.dumps(chosen), salt=salt)
+    response.set_signed_cookie('chosen', json.dumps(chosen), max_age=settings.SESSION_COOKIE_AGE, salt=salt)
     
     return response
