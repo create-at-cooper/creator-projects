@@ -31,6 +31,8 @@ if os.environ.get('LOCAL_DEV', 'True') == 'False':
             'BACKEND': 'django_pylibmc.memcached.PyLibMCCache'
         }
     }
+    
+    DEBUG = False
 else:
     DATABASES = {
         'default': {
