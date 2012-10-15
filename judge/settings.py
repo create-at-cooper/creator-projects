@@ -33,6 +33,11 @@ if os.environ.get('LOCAL_DEV', 'True') == 'False':
     }
     
     STATIC_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com/'
+    AWS_HEADERS = {
+                   #'Expires': 'Thu, 15 Apr 2010 20:00:00 GMT',
+                   'Cache-Control': 'max-age=1209600,public', # two weeks
+                   }
+    AWS_QUERYSTRING_AUTH = False
     
     DEBUG = False
 else:

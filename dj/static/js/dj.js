@@ -131,8 +131,13 @@ function markVotes() {
 }
 
 function vote(choice) {
-	choice.div.addClass("chosen");
-	$('<span>').addClass('votes').html(choice.votes).appendTo(choice.div);
+	if (choice.div.hasClass("chosen")) {
+		$("span.votes", choice.div).html(choice.votes);
+	} else {
+		choice.div.addClass("chosen");
+		$('<span>').addClass('votes').html(choice.votes).appendTo(choice.div);
+	}
+	
 	$(choice.div).parent().addClass("voted");
 	$('#error').empty();
 }
