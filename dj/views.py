@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import datetime
 import json
+import collections
 
 def get_votes_for_choices(choices):
     choices = Choice.objects.filter(id__in=choices)
@@ -118,19 +119,34 @@ def post_test(request):
         result['status'] = 'We need multiple choices!'
         return HttpResponse(json.dumps(result))
     
-    test = Test.objects.create(question=request.POST.get('question', ''))
+    if len(request.FILES.items()) > 5: # limit number of choices
+        result['status'] = 'Image limit reached.'
+        return HttpResponse(json.dumps(result))
     
-    count = 0
-    
+    # check filesizes
     for key, f in request.FILES.items(): #@UnusedVariable
         if f.size > 1048576:
-            continue
+            result['status'] = '%s is above the 1 MB image size limit.' % (f.name)
+            return HttpResponse(json.dumps(result))
         
-        count += 1
+    # check for duplicates
+    question = request.POST.get('question', '')
+    choice_sizes = [int(f.size) for key, f in request.FILES.items()] #@UnusedVariable
+    compare = lambda x, y: collections.Counter(x) == collections.Counter(y)
+    
+        # comparison
+    tests = Test.objects.filter(question=question)
+    for test in tests:
+        test_choice_sizes = [int(choice.image.size) for choice in test.choices.all()]
+        if compare(choice_sizes, test_choice_sizes):
+            result['status'] = 'This test is identical to a previous one.'
+            return HttpResponse(json.dumps(result))
         
-        if count > 5:
-            break
-        
+    
+    # Submission passed all checks, so create it!
+    test = Test.objects.create(question=question)
+    
+    for key, f in request.FILES.items(): #@UnusedVariable        
         c = Choice(test=test)
         
         c.image.save(f.name, f, save=True)

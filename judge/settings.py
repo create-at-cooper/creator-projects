@@ -179,3 +179,6 @@ LOGGING = {
         },
     }
 }
+
+#SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_AGE = 365 * 24 * 60 * 60 # one year
