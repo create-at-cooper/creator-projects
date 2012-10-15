@@ -1,3 +1,5 @@
+"use strict";
+
 var tests = [];
 var votes;
 var maxFiles = 5;
