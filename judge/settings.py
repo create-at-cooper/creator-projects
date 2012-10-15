@@ -33,6 +33,8 @@ if os.environ.get('LOCAL_DEV', 'True') == 'False':
     }
     
     DEBUG = False
+    
+    STATIC_ROOT = '/app/dj/static/'
 else:
     DATABASES = {
         'default': {
@@ -44,6 +46,12 @@ else:
             'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
         }
     }
+    
+    # Absolute path to the directory static files should be collected to.
+    # Don't put anything in this directory yourself; store your static files
+    # in apps' "static/" subdirectories and in STATICFILES_DIRS.
+    # Example: "/home/media/media.lawrence.com/static/"
+    STATIC_ROOT = ''
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -76,12 +84,6 @@ MEDIA_ROOT = join(ROOT_PATH, 'media')
 # trailing slash.
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
 MEDIA_URL = '/media/'
-
-# Absolute path to the directory static files should be collected to.
-# Don't put anything in this directory yourself; store your static files
-# in apps' "static/" subdirectories and in STATICFILES_DIRS.
-# Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = ''
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
