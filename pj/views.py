@@ -43,6 +43,7 @@ def list_projects(projects, keys=[]):
 def serialize_projects(projects, keys=[]):
     return json.dumps(list_projects(projects, keys));
 
+@ensure_csrf_cookie
 def project(request):
     if request.method == "POST":
         return post_project(request)
@@ -85,6 +86,7 @@ def get_project(request):
     
     return HttpResponse(serialize_projects(projects, keys), mimetype="application/json") # Send data back to the user.
 
+@ensure_csrf_cookie
 def post_project(request):
     """User is submitting a project."""
     
