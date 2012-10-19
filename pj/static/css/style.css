@@ -239,6 +239,8 @@ ul, li {
 	
 	display: inline-block;
 	float: right;
+	
+	margin-top: -24pt;
 }
 
 .tag {
