@@ -310,6 +310,8 @@ div, input {
 	margin-bottom: 8pt;
 	
 	text-align: right;
+	
+	color: gray;
 }
 
 .tag {
