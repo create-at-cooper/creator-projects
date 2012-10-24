@@ -46,6 +46,13 @@ function addProject(project, append) {
 	
 	projectDiv.append(title);
 	
+	var members = $('<div>').addClass('members');
+	$.each(project.members, function(i, member) {
+		$('<span>').addClass('member').html(member.name).appendTo(members);
+	});
+	
+	members.appendTo(projectDiv);
+	
 	var images = $("<div>").addClass("images");
 	
 	$.each(project.images, function(j, image) {		
@@ -249,7 +256,8 @@ $(function() {
 		$(window).scroll(function(e) {
 			// Check if we reached bottom of the document
 			if( $(window).height() + $(window).scrollTop() >= $('#main').offset().top + $('#main').height() ) {
-				loadProjects($('#projects .project').last().data("project").id, true);
+				if ($('#projects .project').length > 0)
+					loadProjects($('#projects .project').last().data("project").id, true);
 			}
 		});
 	}
@@ -283,11 +291,34 @@ $(function() {
 		data.append('description', $('#description').val());
 		
 		
+		var members = [];
+		$('#members_list').each(function(i, div) {
+			if ($('.name', div).val() && $('.contact', div).val()) {
+				members.push({
+					name: $('.name', div).val(),
+					contact: $('.contact', div).val()
+				});
+			}
+		});
+		
+		if (members.length < 1) {
+			displayError("We need at least one member!");
+			return;
+		}
+		
+		data.append('members', members.length);
+		
+		$.each(members, function(i, member) {
+			data.append('member-name-' + i, member.name);
+			data.append('member-contact-' + i, member.contact);
+		});
+		
+		
+		data.append('tags', $('#tags').tagit("assignedTags").length);
+		
 		$.each($('#tags').tagit("assignedTags"), function(i, tag) {
 			data.append('tag-' + i, tag);
 		});
-		
-		data.append('tags', $('#tags').tagit("assignedTags").length);
 		
 		for (var i = 0; i < artFiles.length && i < maxFiles; i++) {
 			data.append(i, artFiles[i]);
@@ -304,17 +335,20 @@ $(function() {
 				data = $.parseJSON(data);
 				
 				if (data.status == 'OK') {
+					addProject(data.project);
+					
 					// empty list of files
 					$('#images').empty();
 					$('#title').val('');
 					$('#description').val('');
 					$("#fileselect").val('');
+					$("#members_list").empty();
+					$('#member_contact').val("");
+					$('#member_name').val("");
 					$("#tags").tagit("removeAll");
 					artFiles = [];
 					
 					$('#error').empty();
-					
-					addProject(data.project);
 				} else {
 					displayError(data.status);
 				}
@@ -332,6 +366,67 @@ $(function() {
 			}
 		}
 	});
+	
+	function addMember(e) {
+		var member = $('<li>').addClass('member');
+		
+		$('<input>').addClass('name').attr({
+			type: "text",
+			maxlength: 140,
+			placeholder: "member name"
+		}).val($('#member_name').val()).appendTo(member);
+		
+		$('<input>').addClass('contact').attr({
+			type: "text",
+			maxlength: 256,
+			placeholder: "contact"
+		}).val($('#member_contact').val()).appendTo(member);
+		
+		$('#member_contact').val("");
+		$('#member_name').val("");
+		$('#member_name').focus();
+		
+		$('<button>').addClass('remove').html("&#215;").appendTo(member);
+		
+		$('#members_list').append(member);
+		
+		e.preventDefault();
+	}
+	
+	$('#member_contact, #member_name').focus().keypress(function(e){
+        if (e.which == 13) {
+            addMember(e);
+        }
+    });
+	
+	$('#add_member').click(addMember);
+	
+	$('#members_list').on('click', '.remove', function() {
+		$(this).parent().remove();
+	});
+	
+	/*$('#author').autocomplete({
+		minLength: 0,
+		source: [],
+		focus: function( event, ui ) {
+			$( "#author" ).val( ui.item.value );
+			return false;
+		},
+		select: function( event, ui ) {
+			$( "#id_location" ).val( ui.item.value );
+			$( "#id_room" ).val( ui.item.room );
+			$( "#id_address" ).val( ui.item.address );
+			findAddress();
+			return false;
+		}
+	}).data("autocomplete")._renderItem = function( ul, item ) {
+		return $( "<li></li>" )
+		.data( "item.autocomplete", item )
+		.append( "<a><span class='post-autocomplete-location'>" + item.value + "</span>" +
+				(item.room ? "<span class='post-autocomplete-room'>(" + item.room + ")</span>" : "") +
+				"<br><span class='post-autocomplete-address'>" + item.address + "</span></a>" )
+		.appendTo( ul );
+	};*/
 	
 	$("#tags").tagit({
 		caseSensitive: false,

@@ -8,6 +8,10 @@ body {
 	margin: 8pt;
 }
 
+header {
+	margin-bottom: 4pt;
+}
+
 #logo {
 	display: inline-block;
 	
@@ -35,9 +39,19 @@ header h1 {
 
 /* projects */
 
-input[type="submit"] {
+input[type="submit"], button {
+	font-family: 'Source Sans Pro', sans-serif;
+	font-weight: 900;
+	
+	font-size: 16pt;
+	color: black;
+	
 	background-color: LightGray;
 	border: 4px solid gray;
+}
+
+input[type="submit"]:hover, button:hover {
+	border-color: black;
 }
 
 a:link, a:visited {
@@ -56,6 +70,17 @@ h1 {
 	font-size: 48pt;
 	color: black;
 	
+	margin-top: 8pt;
+	margin-bottom: 8pt;
+}
+
+ul, li {
+	list-decoration: none;
+	margin: 0px;
+	padding: 0px;
+}
+
+p {
 	margin-top: 8pt;
 	margin-bottom: 8pt;
 }
@@ -87,7 +112,6 @@ h1 {
 	font-size: 14pt;
 	font-weight: 400;
 	margin-top: 8pt;
-	clear: both;
 }
 
 #attr {
@@ -111,14 +135,8 @@ div, input {
 	padding: 0px;
 }
 
-ul, li {
-	list-decoration: none;
-	margin: 0px;
-	padding: 0px;
-}
-
 #post {
-	margin-bottom: 8pt;
+	margin-bottom: 16pt;
 }
 
 #images {
@@ -204,6 +222,54 @@ ul, li {
 	padding: 10pt;
 }
 
+#members {
+	margin-bottom: 8pt;
+	width: 100%;
+}
+
+#members .member, #member {
+	margin-top: 4pt;
+	width: 100%;
+	
+	vertical-align: center;
+}
+
+#member_name, #members .name {
+	font-size: 20pt;
+	
+	font-family: 'Source Sans Pro', sans-serif;
+	font-weight: 400;
+	
+	display: inline-block;
+	width: 35%;
+}
+
+#member_contact, #members .contact {
+	font-size: 20pt;
+	
+	font-family: 'Source Sans Pro', sans-serif;
+	font-weight: 400;
+	
+	display: inline-block;
+	width: 56%;
+	
+	margin-left: 1%;
+	margin-right: .5%;
+}
+
+#add_member, #members .remove {
+	display: inline-block;
+	width: 5%;
+	
+	float: right;
+}
+
+.clear {
+	clear: both;
+}
+
+/* Projects list */
+
 .test {
 	padding-top: 2%;
 }
@@ -220,7 +286,7 @@ ul, li {
 	padding-top: 2pt;
 	padding-bottom: 2pt;
 	
-	margin-bottom: 2px;
+	margin-bottom: 2pt;
 }
 
 .title .save {
@@ -236,20 +302,18 @@ ul, li {
 }
 
 .tags {
-	font-size: 18pt;
-	
+	font-size: 20pt;	
 	font-family: 'Source Sans Pro', sans-serif;
-	font-weight: 900;
+	font-weight: 500;
 	
-	display: inline-block;
-	float: right;
+	margin-top: 8pt;
+	margin-bottom: 8pt;
 	
-	margin-top: -24pt;
+	text-align: right;
 }
 
 .tag {
-	margin-left: 12px;
-	margin-right: 12px;
+	margin-left: 16pt;
 }
 
 .image {
@@ -270,8 +334,26 @@ ul, li {
 	
 	margin: 8pt;
 	
+	font-family: 'Source Sans Pro', sans-serif;
 	font-size: 20pt;
+	font-weight: 400;
+}
+
+.members {
+	background-color: LightGray;
+	
+	margin-top: 8pt;
+	margin-bottom: 8pt;
+
+	padding-left: 1%;
+	padding-top: 2pt;
+	padding-bottom: 2pt;
 	
 	font-family: 'Source Sans Pro', sans-serif;
+	font-size: 20pt;
 	font-weight: 400;
+}
+
+.member {
+	margin-right: 16pt;
 }

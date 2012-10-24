@@ -1,22 +1,35 @@
 # Create your views here.
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
-from pj.models import Project, Image, Tag
+from pj.models import Project, Image, Tag, Member
 import collections
 import datetime
 import json
 import markdown
 
 def list_images(images):
-    list_images = []
+    images_list = []
     
     for image in images:    
-        list_images.append({
-                             'id' : image.pk,
+        images_list.append({
+                             'id': image.pk,
                              'image': image.image.url
                              })
         
-    return list_images
+    return images_list
+
+def list_members(members):
+    members_list = []
+    
+    for member in members:
+        members_list.append({
+                             'id': member.pk,
+                             'name': member.name,
+                             'contact': member.contact_info
+                             })
+    
+    return members_list
 
 def dict_project(project):
     t = {'id': project.pk, 
@@ -24,7 +37,8 @@ def dict_project(project):
          'title': project.title,
          'description': markdown.markdown(project.description),
          'images': list_images(project.images.all()),
-         'tags': [str(tag) for tag in project.tags.all()]
+         'tags': [str(tag) for tag in project.tags.all()],
+         'members': list_members(project.members.all())
          }
     
     return t
@@ -86,6 +100,7 @@ def get_project(request):
     
     return HttpResponse(serialize_projects(projects, keys), mimetype="application/json") # Send data back to the user.
 
+@login_required
 @ensure_csrf_cookie
 def post_project(request):
     """User is submitting a project."""
@@ -104,9 +119,22 @@ def post_project(request):
         result['status'] = 'Description too short!'
         return HttpResponse(json.dumps(result))
     
+    # limit number of tags
+    if int(request.POST.get('tags', '0')) > 10:
+        result['status'] = 'Too many tags!'
+        return HttpResponse(json.dumps(result))
+    
+    # there should be at least one member
+    if int(request.POST.get('members', '0')) < 1:
+        result['status'] = 'Need at least one member.'
+        return HttpResponse(json.dumps(result))
+    elif int(request.POST.get('members', '0')) > 10:
+        result['status'] = 'Too many members!'
+        return HttpResponse(json.dumps(result))
+    
     if len(request.FILES.items()) > 5: # limit number of images
         result['status'] = 'Image limit reached.'
-        return HttpResponse(json.dumps(result)) 
+        return HttpResponse(json.dumps(result))
     
     # check filesizes
     for key, f in request.FILES.items(): #@UnusedVariable
@@ -131,13 +159,33 @@ def post_project(request):
     # Submission passed all checks, so create it!
     try:
         description = request.POST.get('description', '')
-        project = Project.objects.create(title=title, description=description)
+        project = Project.objects.create(title=title, description=description, created_by=request.user)
         
         for key, f in request.FILES.items(): #@UnusedVariable
             image = Image(project=project)
             
             image.image.save(f.name, f, save=True)
             image.save()
+        
+        if int(request.POST.get('members', '0')) > 0:
+            for i in range(0, int(request.POST.get('members', '0'))):
+                name = request.POST.get('member-name-' + str(i), '')
+                contact = request.POST.get('member-contact-' + str(i), '')
+                
+                if not name or not contact:
+                    result['status'] = 'Missing contact information.'
+                    return HttpResponse(json.dumps(result))
+                
+                # Make sure name and contact info are of a certain length.
+                if len(name) < 3:
+                    result['status'] = '"%s" is too short!' % (name, )
+                    return HttpResponse(json.dumps(result))
+                if len(contact) < 3:
+                    result['status'] = '"%s" is too short!' % (contact, )
+                    return HttpResponse(json.dumps(result))
+                
+                member, created = Member.objects.get_or_create(name=name, contact_info=contact) #@UnusedVariable
+                project.members.add(member)
         
         if int(request.POST.get('tags', '0')) > 0:
             for i in range(0, int(request.POST.get('tags', '0'))):
@@ -148,6 +196,8 @@ def post_project(request):
         
         result['project'] = dict_project(project)
     except Exception as e:
+        if project:
+            project.delete()
         result['status'] = str(e)
     
     return HttpResponse(json.dumps(result))

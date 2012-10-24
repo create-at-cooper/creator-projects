@@ -7,12 +7,14 @@
 
 <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,900' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
-<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/flick/jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/smoothness/jquery-ui.css">
+
 <link href="{{ STATIC_URL }}css/jquery.tagit.css" rel="stylesheet" type="text/css">
 <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/style.css" />
 
+
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.12/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-ui-1.9.0.custom.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/tag-it.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/pj.js"></script>
 
@@ -50,21 +52,36 @@
 
 <div id="main">
 
+	{% if user.is_authenticated %}
+	{% spaceless %}
 	<form id="post">
 		<input type="text" name="title" id="title" tabindex="1" maxlength="140" placeholder="project title"/>
 		
-		<input type="submit" id="submit" tabindex="4" value="post"></input>
+		<input type="submit" id="submit" tabindex="9" value="post"></input>
 		
-		<textarea id="description" tabindex="2" placeholder="description"></textarea>
+		<div id="members">
+			<ul id="members_list"></ul>
+			<div id="member">
+				<input type="text" id="member_name" tabindex="2" maxlength="140" placeholder="member name"/>
+				<input type="text" id="member_contact" tabindex="3" maxlength="256" placeholder="contact info"/>
+				<button tabindex="4" id="add_member">+</button>
+			</div>
+		</div>
+		
+		<div class="clear"></div>
+		
+		<textarea id="description" tabindex="7" placeholder="description"></textarea>
 	
 		<div id="dropbox">
-			<input type="file" id="fileselect" name="files[]" multiple tabindex="4" />
+			<input type="file" id="fileselect" name="files[]" multiple tabindex="6" />
 			
 			<div id="images"></div>
 		</div>
 		
-		<ul id="tags" tabindex="5" placeholder="tags" ></ul>
+		<ul id="tags" tabindex="8" placeholder="tags" ></ul>
 	</form>
+	{% endspaceless %}
+	{% endif %}
 	
 	<ul id="error"></ul>
 	

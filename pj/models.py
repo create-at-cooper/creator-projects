@@ -3,16 +3,18 @@ from django.db import models
 from django.db.models.fields.files import ImageField
 from django.db.models.signals import post_save
 from django.template.defaultfilters import slugify
-from uuid import uuid4
 
 class Project(models.Model):
     title = models.CharField(max_length=140)
     created = models.DateTimeField('date published', auto_now_add=True)
+    created_by = models.ForeignKey(User)
     tags = models.ManyToManyField('Tag', blank=True)
     slug = models.SlugField(blank=True)
-    description = models.CharField(max_length=2000, blank=True)
+    description = models.TextField(blank=True)
     
-    members = models.ManyToManyField(User, blank=True)
+    members = models.ManyToManyField('Member', null=True, blank=True)
+    
+    period = models.CharField(max_length=100)
     start_time = models.DateTimeField(blank=True, null=True)
     end_time = models.DateTimeField(blank=True, null=True)
     
@@ -25,6 +27,16 @@ class Project(models.Model):
     
     def __unicode__(self):
         return u"%s" % (self.title, )
+
+class Member(models.Model):
+    # we need some way of aggregating members
+    user = models.ForeignKey(User, related_name='memberships', blank=True, null=True)
+    name = models.CharField(max_length=140)
+    # this could be email/website/twitter/linkedin
+    contact_info = models.CharField(max_length=256)
+    
+    def __unicode__(self):
+        return u"%s (%s)" % (self.name, self.contact_info)
     
 class UserProfile(models.Model):
     user = models.OneToOneField(User)

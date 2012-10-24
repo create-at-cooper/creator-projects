@@ -1,6 +1,6 @@
 *.pyc
-judge/dj.db
+projects/dj.db
 *.pydevproject
 *.project
 *.settings
-judge/media/
+projects/media
