@@ -405,35 +405,92 @@ $(function() {
 		$(this).parent().remove();
 	});
 	
-	/*$('#author').autocomplete({
+	var pjMembers  = [];
+	var pjMemberMap = {};
+	var old_search_member;
+	
+	$('#member_name').autocomplete({
 		minLength: 0,
-		source: [],
-		focus: function( event, ui ) {
-			$( "#author" ).val( ui.item.value );
-			return false;
+		source: function(request, response) {
+			if (old_search_member != request.term) {
+				$.get("api/member", {name: request.term}, function(data) {		
+					var new_members = [];
+					
+					$.map(data, function(member) {
+						member.value = member.name;
+						
+						if (pjMemberMap[member.name] === undefined) {
+							new_members.push(member);
+							pjMemberMap[member.name] = member;
+						}
+					});
+					
+					$.merge(pjMembers, new_members);
+				}, "json").complete(function() {
+					response(pjMembers);
+				});
+			} else {
+				response(pjMembers);
+			}
 		},
-		select: function( event, ui ) {
-			$( "#id_location" ).val( ui.item.value );
-			$( "#id_room" ).val( ui.item.room );
-			$( "#id_address" ).val( ui.item.address );
-			findAddress();
+		select: function(event, ui) {
+			$('#member_name').val(ui.item.value);
+			$('#member_contact').val(ui.item.contact);
+			$('#add_member').click();
+			
 			return false;
 		}
-	}).data("autocomplete")._renderItem = function( ul, item ) {
-		return $( "<li></li>" )
-		.data( "item.autocomplete", item )
-		.append( "<a><span class='post-autocomplete-location'>" + item.value + "</span>" +
-				(item.room ? "<span class='post-autocomplete-room'>(" + item.room + ")</span>" : "") +
-				"<br><span class='post-autocomplete-address'>" + item.address + "</span></a>" )
-		.appendTo( ul );
-	};*/
+	}).data("autocomplete")._renderItem = function(ul, item) {
+		return $("<li>")
+		.data("item.autocomplete", item)
+		.append("<a><span class='suggest name'>" + item.value + "</span>" +
+				"<br><span class='suggest contact'>" + item.contact + "</span></a>" )
+		.appendTo(ul);
+	};
 	
+	var tags  = [];
+	var tagMap = {};
+	
+	function subtractArray(a1, a2) {
+        var result = [];
+        for (var i = 0; i < a1.length; i++) {
+            if ($.inArray(a1[i], a2) == -1) {
+                result.push(a1[i]);
+            }
+        }
+        return result;
+    };
+	
+    var old_search_tag;
+    
 	$("#tags").tagit({
 		caseSensitive: false,
 		allowSpaces: true,
 		removeConfirmation: true,
 		placeholderText: "tags",
-		availableTags: []
+		tagSource: function(search, showChoices) {
+			
+			if (search.term != old_search_tag) {
+				old_search_tag = search.term;
+				
+				$.get("api/tag", {name: search.term}, function(data) {		
+					var new_tags = [];
+					
+					$.map(data, function(tag) {
+						if (tagMap[tag.name] === undefined) {
+							new_tags.push(tag.name);
+							tagMap[tag.name] = tag;
+						}
+					});
+					
+					$.merge(tags, new_tags);
+				}, "json").complete(function() {
+					showChoices(subtractArray(tags, $("#tags").tagit("assignedTags")));
+				});
+			} else {
+				showChoices(subtractArray(tags, $("#tags").tagit("assignedTags")));
+			}
+        }
 	});
 	
 	$('#error').on('click', '.error', function() {

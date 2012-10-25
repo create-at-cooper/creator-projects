@@ -8,6 +8,37 @@ import datetime
 import json
 import markdown
 
+def list_tags(tags):
+    tags_list = []
+    
+    for tag in tags:
+        tags_list.append({
+                          'id': tag.pk,
+                          'name': tag.name
+                          })
+        
+    return tags_list
+
+@ensure_csrf_cookie
+def tag(request):
+    if request.method == "POST":
+        return post_project(request)
+    else:
+        tags = Tag.objects.all()
+        if 'name' in request.GET:
+            name = request.GET['name'].lower()
+            tags = tags.filter(name__startswith=name)
+            
+        if 'contact' in request.GET:
+            contact = request.GET['contact']
+            tags = tags.filter(contact__startswith=contact)
+            
+        if 'id' in request.GET:
+            pk = request.GET['id']
+            tags = tags.filter(pk=pk)
+            
+        return HttpResponse(json.dumps(list_tags(tags)))
+
 def list_images(images):
     images_list = []
     
@@ -30,6 +61,26 @@ def list_members(members):
                              })
     
     return members_list
+
+@ensure_csrf_cookie
+def member(request):
+    if request.method == "POST":
+        return post_project(request)
+    else:
+        members = Member.objects.all()
+        if 'name' in request.GET:
+            name = request.GET['name'].lower()
+            members = members.filter(name__startswith=name)
+            
+        if 'contact' in request.GET:
+            contact = request.GET['contact']
+            members = members.filter(contact__startswith=contact)
+            
+        if 'id' in request.GET:
+            pk = request.GET['id']
+            members = members.filter(pk=pk)
+            
+        return HttpResponse(json.dumps(list_members(members)))
 
 def dict_project(project):
     t = {'id': project.pk, 
