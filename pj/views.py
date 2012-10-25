@@ -15,6 +15,10 @@ def api_login(request):
     
     username = request.POST['username']
     password = request.POST['password']
+    
+    if '@' in username:
+        username = username[:username.find('@')]
+    
     user = authenticate(username=username, password=password)
     
     if user is not None:
