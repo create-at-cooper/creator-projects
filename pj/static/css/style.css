@@ -342,15 +342,34 @@ div, input {
 }
 
 .members {
-	margin-top: 8pt;
-	margin-bottom: 8pt;	
+	margin-top: 8pt;	
 	
 	font-family: 'Source Sans Pro', sans-serif;
 	font-size: 20pt;
 	font-weight: 400;
 }
 
-.member {
-	padding-top: 2pt 1% 2pt 1%;
+#projects .member .info {
+	display: inline-block;
+	margin-bottom: 8pt;
+}
+
+#projects .member .name {
+	display: inline-block;
+	
+	padding: 2pt 8pt 2pt 8pt;
 	background-color: LightGray;
+}
+
+#projects .member .contact {
+	display: inline-block;
+	
+	padding: 2pt 8pt 2pt 8pt;
+	background-color: darkgray;
+	color: white;
+}
+
+#projects .member {
+	display: inline;
+	margin-right: 8pt;
 }

@@ -48,7 +48,21 @@ function addProject(project, append) {
 	
 	var members = $('<div>').addClass('members');
 	$.each(project.members, function(i, member) {
-		$('<a>').addClass('member').attr("href", "?member=" + member.id).html(member.name).appendTo(members);
+		var memberDiv = $('<div>').addClass('info');
+		
+		$('<div>').addClass('member').append(memberDiv).appendTo(members);
+		
+		$('<a>').addClass("name").attr("href", "?member=" + member.id).html(member.name).appendTo(memberDiv);
+		
+		var contact;
+		
+		if (member.contact.search("@") > 0 && member.contact.search("@") > 1) {
+			contact = $('<a>').attr("href", "mailto:" + member.contact);
+		} else {
+			contact = $('<a>').attr("href", member.contact);;
+		}
+		
+		contact.addClass("contact").html(member.contact).appendTo(memberDiv);
 	});
 	
 	members.appendTo(projectDiv);
@@ -254,12 +268,10 @@ function buildQuery() {
 
 $(function() {
 	
-	var project = getParameterByName("project")
-	if (project)
-		q["project"] = project;
+	var project = getParameterByName("project");
 	
 	if (project) {
-		loadProject({project: project});
+		loadProject({id: project});
 	} else {
 		loadProjects();
 		
