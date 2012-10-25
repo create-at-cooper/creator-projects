@@ -1,6 +1,5 @@
 # Django settings for projects project.
 
-from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
 from os.path import abspath, dirname, basename, join
 import dj_database_url
 import os
@@ -190,10 +189,14 @@ LOGGING = {
 #SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 SESSION_COOKIE_AGE = 365 * 24 * 60 * 60 # one year
 
+AUTHENTICATION_BACKENDS = ('pj.IMAPBackend.IMAPBackend',
+                           'django.contrib.auth.backends.ModelBackend',
+                           )
+
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/login"
 LOGOUT_URL = "/logout"
-AUTH_PROFILE_MODULE = "projects.UserProfile"
+AUTH_PROFILE_MODULE = "pj.UserProfile"
 USE_TZ = True
 
 #TEMPLATE_CONTEXT_PROCESSORS += ('django.core.context_processors.request', )

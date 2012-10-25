@@ -37,6 +37,12 @@ header h1 {
 	display: inline-block;
 }
 
+footer {
+	font-family: 'Source Sans Pro', sans-serif;
+	font-weight: 500;
+	font-size: 10pt;
+}
+
 /* projects */
 
 input[type="submit"], button {
@@ -114,7 +120,7 @@ p {
 	margin-top: 8pt;
 }
 
-#attr {
+#acct {
 	position: absolute;
 	top: 0px;
 	right: 0px;

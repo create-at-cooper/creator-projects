@@ -47,7 +47,7 @@
 
 	<h1><a href="http://projects.cooperstartup.com">Cooper Union Projects</a></h1>
 	
-	<div id="attr"><a href="http://ericleong.me">by eric leong</a></div>
+	<div id="acct"><a href="{% if user.is_authenticated %}logout{% else %}login{% endif %}">{% if user.is_authenticated %}logout{% else %}login{% endif %}</a></div>
 </header>
 
 <div id="main">
@@ -88,6 +88,8 @@
 	<ul id="projects"></ul>
 
 </div>
+
+<footer><a href="http://ericleong.me">by eric leong</a></footer>
 
 </body>
 </html>

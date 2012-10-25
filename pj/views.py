@@ -1,12 +1,41 @@
 # Create your views here.
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import ensure_csrf_cookie
 from pj.models import Project, Image, Tag, Member
 import collections
 import datetime
 import json
 import markdown
+
+def api_login(request):
+    if 'username' not in request.POST or 'password' not in request.POST:
+        return HttpResponse(json.dumps({'status': 'Username and password needed!'}))
+    
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(username=username, password=password)
+    
+    if user is not None:
+        if user.is_active:
+            login(request, user)
+            return HttpResponse(json.dumps({'status': 'OK'}))
+        else:
+            return HttpResponse(json.dumps({'status': 'Disabled account.'}))
+    else:
+        return HttpResponse(json.dumps({'status': 'Invalid credentials.'}))
+
+@login_required
+def api_logout(request):
+    logout(request)
+    
+    return HttpResponse(json.dumps({'status': 'OK'}))
+
+def redirect_logout(request):
+    logout(request)
+    
+    return HttpResponseRedirect('/')
 
 def list_tags(tags):
     tags_list = []
