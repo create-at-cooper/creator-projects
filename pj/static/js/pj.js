@@ -300,7 +300,7 @@ $(function() {
 
 	$('#fileselect').get(0).addEventListener("change", handleFileSelect, false);
 	
-	$('#post').submit(function(e) {
+	$('#project').submit(function(e) {
 		e.preventDefault();
 		
 		if (artFiles.length < 1) {
@@ -314,7 +314,7 @@ $(function() {
 		
 		
 		var members = [];
-		$('#members_list').each(function(i, div) {
+		$('#members_list .member').each(function(i, div) {
 			if ($('.name', div).val() && $('.contact', div).val()) {
 				members.push({
 					name: $('.name', div).val(),
