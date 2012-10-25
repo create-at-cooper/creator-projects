@@ -48,7 +48,7 @@ function addProject(project, append) {
 	
 	var members = $('<div>').addClass('members');
 	$.each(project.members, function(i, member) {
-		$('<span>').addClass('member').html(member.name).appendTo(members);
+		$('<a>').addClass('member').attr("href", "?member=" + member.id).html(member.name).appendTo(members);
 	});
 	
 	members.appendTo(projectDiv);
@@ -69,7 +69,7 @@ function addProject(project, append) {
 	
 	var tags = $('<div>').addClass('tags');
 	$.each(project.tags, function(i, tag) {
-		$('<span>').addClass('tag').html(tag).appendTo(tags);
+		$('<a>').addClass('tag').attr("href", "?tag=" + tag).html(tag).appendTo(tags);
 	});
 	
 	tags.appendTo(projectDiv);
@@ -82,14 +82,8 @@ function addProject(project, append) {
 	
 }
 
-function loadProject(id, key) {
-	var getData = {id: id};
-	
-	if (key !== undefined) {
-		getData.key = key;
-	}
-	
-	$.getJSON("/api/project", getData, function(data) {
+function loadProject(query) {
+	$.getJSON("/api/project", query, function(data) {
 		projects = projects.concat(data);
 		
 		$.each(data, function(i, project) {
@@ -99,7 +93,7 @@ function loadProject(id, key) {
 }
 
 function loadProjects(before_id, append) {
-	var getData = {};
+	var getData = buildQuery();
 	
 	if (before_id !== undefined) {
 		getData.before_id = before_id;
@@ -233,23 +227,39 @@ function handleReaderLoadEnd(image, event) {
 	});
 }
 
-$(function() {
-	function getParameterByName(name) {
-		// http://stackoverflow.com/titles/901115/how-can-i-get-query-string-values
-	    var match = RegExp('[?&]' + name + '=([^&]*)')
-	                    .exec(window.location.search);
-	    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-	}
+function getParameterByName(name) {
+	// http://stackoverflow.com/titles/901115/how-can-i-get-query-string-values
+    var match = RegExp('[?&]' + name + '=([^&]*)')
+                    .exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function buildQuery() {
+	var q = {};
 	
-	var project = getParameterByName("project");
+	var tag = getParameterByName("tag")
+	if (tag)
+		q["tag"] = tag;
+	
+	var name = getParameterByName("name")
+	if (name)
+		q["name"] = name;
+	
+	var member = getParameterByName("member")
+	if (member)
+		q["member"] = member;
+	
+	return q;
+}
+
+$(function() {
+	
+	var project = getParameterByName("project")
+	if (project)
+		q["project"] = project;
+	
 	if (project) {
-		var key = getParameterByName("key");
-		if (key)
-			loadProject(project, key);
-		else
-			loadProject(project);
-		
-		$('#post').hide();
+		loadProject({project: project});
 	} else {
 		loadProjects();
 		

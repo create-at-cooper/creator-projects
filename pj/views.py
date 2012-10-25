@@ -133,6 +133,30 @@ def get_project(request):
             if len(keys) > 0:
                 keys = [n for n in keys.split(',')]
    
+    if 'tag' in request.GET:
+        tags = request.GET['tag']
+        if len(tags) > 0:
+            tags = tags.split(',')
+            projects = projects.filter(tags__name__in=tags)
+        else:
+            return HttpResponse([])
+        
+    if 'name' in request.GET:
+        members = request.GET['name']
+        if len(members) > 0:
+            members = members.split(',')
+            projects = projects.filter(members__name__in=members)
+        else:
+            return HttpResponse([])
+        
+    if 'member' in request.GET:
+        members = request.GET['member']
+        if len(members) > 0:
+            members = members.split(',')
+            projects = projects.filter(members__pk__in=members)
+        else:
+            return HttpResponse([])
+   
     if 'since' in request.GET:
         since = datetime.datetime.strptime(request.GET['since'], '%Y-%m-%d %H:%M:%SZ')
         projects = projects.filter(creation_date__gt=since)

@@ -1,6 +1,8 @@
 # Django settings for projects project.
 
+from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
 from os.path import abspath, dirname, basename, join
+import dj_database_url
 import os
 PROJECT_DIR = os.path.dirname(__file__)
 
@@ -16,7 +18,6 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-import dj_database_url
 
 if os.environ.get('LOCAL_DEV', 'True') == 'False':
     DATABASES = {'default': dj_database_url.config(default='postgres://localhost')}
@@ -194,3 +195,5 @@ LOGIN_URL = "/login"
 LOGOUT_URL = "/logout"
 AUTH_PROFILE_MODULE = "projects.UserProfile"
 USE_TZ = True
+
+#TEMPLATE_CONTEXT_PROCESSORS += ('django.core.context_processors.request', )

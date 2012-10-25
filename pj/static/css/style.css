@@ -310,12 +310,11 @@ div, input {
 	margin-bottom: 8pt;
 	
 	text-align: right;
-	
-	color: gray;
 }
 
-.tag {
+.tag, .tag:link, .tag:visited {
 	margin-left: 16pt;
+	color: gray;
 }
 
 .image {
@@ -343,14 +342,8 @@ div, input {
 }
 
 .members {
-	background-color: LightGray;
-	
 	margin-top: 8pt;
-	margin-bottom: 8pt;
-
-	padding-left: 1%;
-	padding-top: 2pt;
-	padding-bottom: 2pt;
+	margin-bottom: 8pt;	
 	
 	font-family: 'Source Sans Pro', sans-serif;
 	font-size: 20pt;
@@ -358,5 +351,6 @@ div, input {
 }
 
 .member {
-	margin-right: 16pt;
+	padding-top: 2pt 1% 2pt 1%;
+	background-color: LightGray;
 }
