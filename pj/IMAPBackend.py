@@ -11,6 +11,9 @@ class IMAPBackend:
     # Create an authentication method
     # This is called by the standard Django login procedure
     def authenticate(self, username=None, password=None):
+        if '@' in username:
+            username = username[:username.find('@')]
+        
         try:
             # Check if this user is valid on the mail server
             c = IMAP4_SSL('farley2.cooper.edu')
