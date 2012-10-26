@@ -69,6 +69,15 @@ a:hover {
 	color: gray;
 }
 
+p a:link, p a:visited {
+	text-decoration: none;
+	color: gray;
+}
+
+p a:hover {
+	color: black;
+}
+
 h1 {
 	font-family: 'Source Sans Pro', sans-serif;
 	font-weight: 900;

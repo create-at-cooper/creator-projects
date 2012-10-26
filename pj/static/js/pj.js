@@ -106,7 +106,7 @@ function loadProject(query) {
 	});
 }
 
-function loadProjects(before_id, append) {
+function loadProjects(before_id, append, callback) {
 	var getData = buildQuery();
 	
 	if (before_id !== undefined) {
@@ -124,6 +124,9 @@ function loadProjects(before_id, append) {
 		$.each(data, function(i, project) {
 			addProject(project, append);
 		});
+		
+		if ($.isFunction(callback))
+			callback();
 	});
 }
 
@@ -275,11 +278,19 @@ $(function() {
 	} else {
 		loadProjects();
 		
+		var loading = false;
+		
 		$(window).scroll(function(e) {
 			// Check if we reached bottom of the document
-			if( $(window).height() + $(window).scrollTop() >= $('#main').offset().top + $('#main').height() ) {
-				if ($('#projects .project').length > 0)
-					loadProjects($('#projects .project').last().data("project").id, true);
+			if(!loading && $(window).height() + $(window).scrollTop() >= $('#main').offset().top + $('#main').height() - $(window).height() / 20) {
+				if ($('#projects .project').length > 0) {
+					loading = true;
+					
+					loadProjects($('#projects .project').last().data("project").id, true, function() {
+						loading = false;
+					});
+				}
+					
 			}
 		});
 	}
