@@ -63,7 +63,29 @@ function addProject(project, append) {
 		}
 		
 		contact.addClass("contact").html(member.contact).appendTo(memberDiv);
+		
+		if (member.check == "possible") {
+			$('<div>').addClass('check').html("me!").click(function() {
+				
+				var me = $(this);
+				
+				$.post("/api/member", {id: member.id}, function(data) {
+					if (data.status == 'OK') {
+						me.html("&#x2713;");
+						me.removeClass('check');
+						me.addClass('verified');
+					} else {
+						displayError(data.status);
+					}
+				}, "json");
+			
+			}).appendTo(memberDiv);
+		} else if (member.check == "possible") {
+			$('<div>').addClass('verified').html("&#x2713;").appendTo(memberDiv);
+		}
 	});
+	
+	// TODO: do something if user clicks check
 	
 	members.appendTo(projectDiv);
 	

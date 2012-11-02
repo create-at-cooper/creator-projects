@@ -1,6 +1,7 @@
 # Create your views here.
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import ensure_csrf_cookie
 from pj.models import Project, Image, Tag, Member
@@ -83,22 +84,33 @@ def list_images(images):
         
     return images_list
 
-def list_members(members):
+def dict_member(member, user=None):
+    member_dict = {
+                   'id': member.pk,
+                   'name': member.name,
+                   'contact': member.contact_info
+                   }
+    
+    if user:
+        if user == member.user:
+            member_dict['check'] = 'verified'
+        elif not member.user and user.email == member.contact_info:
+            member_dict['check'] = 'possible'
+    
+    return member_dict
+
+def list_members(members, user=None):
     members_list = []
     
     for member in members:
-        members_list.append({
-                             'id': member.pk,
-                             'name': member.name,
-                             'contact': member.contact_info
-                             })
+        members_list.append(dict_member(member, user))
     
     return members_list
 
 @ensure_csrf_cookie
 def member(request):
     if request.method == "POST":
-        return post_project(request)
+        return post_member(request)
     else:
         members = Member.objects.all()
         if 'name' in request.GET:
@@ -114,32 +126,50 @@ def member(request):
             members = members.filter(pk=pk)
             
         return HttpResponse(json.dumps(list_members(members)))
+    
+@login_required
+@ensure_csrf_cookie
+def post_member(request):
+    result = {'status' : 'OK'}
+    
+    if 'id' in request.POST:
+        pk = request.POST['id']
+        
+        try:
+            member = Member.objects.get(pk=pk)
+            member.user = request.user
+            member.save()
+            
+            result['member'] = dict_member(member, request.user)
+        except ObjectDoesNotExist:
+            result['status'] = 'Member not found.'
+    else:
+        result['status'] = 'No member id specified!'
+    
+    return HttpResponse(json.dumps(result))
 
-def dict_project(project):
+def dict_project(project, user=None):
     t = {'id': project.pk, 
          'created': str(project.created),
          'title': project.title,
          'description': markdown.markdown(project.description),
          'images': list_images(project.images.all()),
          'tags': [str(tag) for tag in project.tags.all()],
-         'members': list_members(project.members.all())
+         'members': list_members(project.members.all(), user)
          }
     
     return t
 
-def list_projects(projects, keys=[]):
+def list_projects(projects, user=None):
     """Returns a serialized string of the given projects."""
     list_projects = [] # empty list of projects
-    for i, project in enumerate(projects):
-        if i < len(keys) and unicode(project.key) == unicode(keys[i]):
-            list_projects.append(dict_project(project, True))
-        else:
-            list_projects.append(dict_project(project))
+    for project in projects:
+        list_projects.append(dict_project(project, user))
         
     return list_projects
 
-def serialize_projects(projects, keys=[]):
-    return json.dumps(list_projects(projects, keys));
+def serialize_projects(projects, user=None):
+    return json.dumps(list_projects(projects, user));
 
 @ensure_csrf_cookie
 def project(request):
@@ -151,7 +181,6 @@ def project(request):
 @ensure_csrf_cookie
 def get_project(request):
     projects = Project.objects.all()
-    keys = []
         
     if 'id' in request.GET:
         ids = request.GET['id']
@@ -160,11 +189,6 @@ def get_project(request):
             projects = projects.filter(pk__in=pk)
         else:
             return HttpResponse([])
-                
-        if 'key' in request.GET:
-            keys = request.GET['key']
-            if len(keys) > 0:
-                keys = [n for n in keys.split(',')]
    
     if 'tag' in request.GET:
         tags = request.GET['tag']
@@ -206,7 +230,7 @@ def get_project(request):
     limit = int(request.GET.get('limit', '5')) 
     projects = projects[offset : offset + limit]
     
-    return HttpResponse(serialize_projects(projects, keys), mimetype="application/json") # Send data back to the user.
+    return HttpResponse(serialize_projects(projects, request.user), mimetype="application/json") # Send data back to the user.
 
 @login_required
 @ensure_csrf_cookie
