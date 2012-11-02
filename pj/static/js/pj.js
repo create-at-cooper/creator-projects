@@ -224,7 +224,7 @@ function loadProjects(before_id, append, callback) {
 		});
 		
 		if ($.isFunction(callback))
-			callback();
+			callback(projects);
 	});
 }
 
@@ -331,15 +331,19 @@ function getParameterByName(name) {
 function buildQuery() {
 	var q = {};
 	
-	var tag = getParameterByName("tag")
+	var query = getParameterByName("q");
+	if (query)
+		q["q"] = query;
+	
+	var tag = getParameterByName("tag");
 	if (tag)
 		q["tag"] = tag;
 	
-	var name = getParameterByName("name")
+	var name = getParameterByName("name");
 	if (name)
 		q["name"] = name;
 	
-	var member = getParameterByName("member")
+	var member = getParameterByName("member");
 	if (member)
 		q["member"] = member;
 	
@@ -521,14 +525,14 @@ function createProject() {
 	var pjMemberMap = {};
 	
 	$('#member_name').autocomplete({
-		minLength: 0,
+		minLength: 1,
 		source: function(request, response) {
 			if (request.term.length == 0)
 				response([]);
 			
 			var respMembers = pjMembers;
 			
-			$.get("api/member", {name: request.term}, function(data) {
+			$.get("api/member", {filter: request.term}, function(data) {
 				respMembers = data;
 				
 				// keep complete list of members
@@ -564,18 +568,7 @@ function createProject() {
 	};
 	
 	var tags  = [];
-	var tagMap = {};
-	
-	function subtractArray(a1, a2) {
-        var result = [];
-        for (var i = 0; i < a1.length; i++) {
-            if ($.inArray(a1[i], a2) == -1) {
-                result.push(a1[i]);
-            }
-        }
-        return result;
-    };
-	
+	var tagMap = {};	
     var old_search_tag;
     
 	$("#tags").tagit({
@@ -589,7 +582,7 @@ function createProject() {
 			if (search.term != old_search_tag) {
 				old_search_tag = search.term;
 				
-				$.get("api/tag", {name: search.term}, function(data) {		
+				$.get("api/tag", {filter: search.term}, function(data) {		
 					var new_tags = [];
 					
 					$.map(data, function(tag) {
@@ -610,6 +603,16 @@ function createProject() {
 	});
 }
 
+function subtractArray(a1, a2) {
+    var result = [];
+    for (var i = 0; i < a1.length; i++) {
+        if ($.inArray(a1[i], a2) == -1) {
+            result.push(a1[i]);
+        }
+    }
+    return result;
+};
+
 $(function() {
 	
 	var project = getParameterByName("project");
@@ -626,7 +629,14 @@ $(function() {
 		}
 		
 	} else {
-		loadProjects();
+		
+		var query = getParameterByName("q");
+		$('#query').val(query);
+		
+		loadProjects(undefined, false, function(projects) {
+			if (projects.length == 0)
+				displayError('No projects found for "' + query + '"');
+		});
 		
 		var loading = false;
 		
@@ -652,4 +662,89 @@ $(function() {
 	$('#error').on('click', '.error', function() {
 		$(this).remove();
 	});
+	
+	var tags  = [];
+	var members = [];
+	var tagMap = {};
+	var memberMap = {};
+	
+	$('#query').autocomplete({
+		minLength: 1,
+		source: function(request, response) {
+			if (request.term.length == 0)
+				response([]);
+			
+			
+			var tagDone = false;
+			var memberDone = false;
+			
+			var respTags = tags;
+			var respMembers = members;
+			
+			$.get("api/tag", {q: request.term}, function(data) {
+				respTags = data;
+				var new_tags = [];
+				
+				$.map(data, function(tag) {
+					if (tagMap[tag.name] === undefined) {
+						tag.url = '?tag=' + tag.name;
+						new_tags.push(tag.name);
+						tagMap[tag.name] = tag;
+					}
+				});
+				
+				$.merge(tags, new_tags);
+			}, "json").complete(function() {
+				tagDone = true;
+				
+				if (memberDone)
+					response($.merge(respTags, respMembers));
+			});
+			
+			$.get("api/member", {q: request.term}, function(data) {
+				respMembers = data;
+				var new_members = [];
+				
+				$.map(data, function(member) {
+					if (memberMap[member.name] === undefined) {
+						member.url = '?member=' + member.id;
+						new_members.push(member.name);
+						memberMap[member.name] = member;
+					}
+				});
+				
+				$.merge(members, new_members);
+			}, "json").complete(function() {
+				memberDone = true;
+				
+				if (tagDone)
+					response($.merge(respTags, respMembers));
+			});
+		},
+		focus: function(event, ui) {
+			if (ui.item.name)
+				$('#query').val(ui.item.name);
+			
+			return false;
+		},
+		select: function(event, ui) {
+			if (ui.item.name && ui.item.url)
+				window.location = ui.item.url;
+			
+			return false;
+		}
+	}).data("autocomplete")._renderItem = function(ul, item) {
+		
+		var entry = $('<li>').data('item.autocomplete', item);
+		
+		if (item.contact) {
+			item.div = entry.append('<a href="?member=' + item.id + '"><span class="suggest member">' + item.name + ' (' + item.contact + ')</span></a>');
+			item.div.appendTo(ul);
+		} else {
+			item.div = entry.append('<a href="?tag=' + item.name + '"><span class="suggest name">' + item.name + '</span></a>');
+			item.div.appendTo(ul);
+		}
+		
+		return entry;
+	};
 })

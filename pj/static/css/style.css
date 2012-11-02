@@ -6,10 +6,18 @@ html, body {
 body {
 	position: relative;
 	margin: 8pt;
+	overflow-x: hidden;
 }
 
 header {
+	position: relative;
 	margin-bottom: 4pt;
+}
+
+#main {
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 1024px;
 }
 
 #logo {
@@ -90,7 +98,7 @@ h1 {
 }
 
 ul, li {
-	list-decoration: none;
+	list-style-type: none;
 	margin: 0px;
 	padding: 0px;
 }
@@ -174,11 +182,23 @@ div, input {
 	background-color: #29BE27;
 }
 
+#query {
+	font-size: 24pt;
+	
+	font-family: 'Source Sans Pro', sans-serif;
+	font-weight: 500;
+	
+	margin-top: 12px;
+	margin-bottom: 12px;
+	
+	width: 99%;
+}
+
 #title {
 	font-size: 24pt;
 	
 	font-family: 'Source Sans Pro', sans-serif;
-	font-weight: 900;
+	font-weight: 500;
 	
 	margin-top: 12px;
 	margin-bottom: 12px;
@@ -327,7 +347,7 @@ div, input {
 	display: inline-block;
 }
 
-.tags {
+#projects .tags {
 	font-size: 20pt;	
 	font-family: 'Source Sans Pro', sans-serif;
 	font-weight: 500;
@@ -338,9 +358,13 @@ div, input {
 	text-align: right;
 }
 
-.tag, .tag:link, .tag:visited {
+#projects .tag, #projects .tag:link, #projects .tag:visited {
 	margin-left: 16pt;
 	color: gray;
+}
+
+#projects .tag:hover {
+	color: black;
 }
 
 .image {

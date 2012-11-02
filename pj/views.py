@@ -2,6 +2,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models.query_utils import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import ensure_csrf_cookie
 from pj.models import Project, Image, Tag, Member
@@ -55,17 +56,17 @@ def list_tags(tags):
 
 @ensure_csrf_cookie
 def tag(request):
-    if request.method == "POST":
-        return post_project(request)
-    else:
+    if request.method == "GET":
         tags = Tag.objects.all()
-        if 'name' in request.GET:
-            name = request.GET['name'].lower()
-            tags = tags.filter(name__startswith=name)
-            
-        if 'contact' in request.GET:
-            contact = request.GET['contact']
-            tags = tags.filter(contact__startswith=contact)
+        
+        # general search
+        if 'q' in request.GET:
+            q = request.GET['q']
+            tags = tags.filter(name__icontains=q)
+        
+        if 'filter' in request.GET:
+            f = request.GET['filter'].lower()
+            tags = tags.filter(name__startswith=f)
             
         if 'id' in request.GET:
             pk = request.GET['id']
@@ -113,13 +114,14 @@ def member(request):
         return post_member(request)
     else:
         members = Member.objects.all()
-        if 'name' in request.GET:
-            name = request.GET['name'].lower()
-            members = members.filter(name__startswith=name)
-            
-        if 'contact' in request.GET:
-            contact = request.GET['contact']
-            members = members.filter(contact__startswith=contact)
+        
+        if 'q' in request.GET:
+            q = request.GET['q']
+            members = members.filter(Q(name__icontains=q) | Q(contact_info__icontains=q))
+        
+        if 'filter' in request.GET:
+            f = request.GET['filter']
+            members = members.filter(Q(name__istartswith=f) | Q(contact_info__istartswith=f))            
             
         if 'id' in request.GET:
             pk = request.GET['id']
@@ -188,6 +190,10 @@ def project(request):
 @ensure_csrf_cookie
 def get_project(request):
     projects = Project.objects.all()
+    
+    if 'q' in request.GET:
+        q = request.GET['q']
+        projects = projects.filter(Q(title__icontains=q) | Q(description__icontains=q) | Q(tags__name__icontains=q) | Q(members__name__icontains=q) | Q(members__contact_info__icontains=q)).distinct()
         
     if 'id' in request.GET:
         ids = request.GET['id']
