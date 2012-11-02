@@ -404,41 +404,7 @@ function getMembers() {
 	return members;
 }
 
-$(function() {
-	
-	var project = getParameterByName("project");
-	
-	if (project) {
-		var edit = getParameterByName("edit");
-		
-		if (edit == "1") {
-			loadProjectEdit({id: project, edit: 1});
-			$('#submit').val("edit");
-		} else {
-			loadProject({id: project});
-			$('#project').hide();
-		}
-		
-	} else {
-		loadProjects();
-		
-		var loading = false;
-		
-		$(window).scroll(function(e) {
-			// Check if we reached bottom of the document
-			if(!loading && $(window).height() + $(window).scrollTop() >= $('#main').offset().top + $('#main').height() - $(window).height() / 20) {
-				if ($('#projects .project').length > 0) {
-					loading = true;
-					
-					loadProjects($('#projects .project').last().data("project").id, true, function() {
-						loading = false;
-					});
-				}
-					
-			}
-		});
-	}
-	
+function createProject() {
 	$('#dropbox').get(0).addEventListener("drop", dropAction, false);
 	$('#dropbox').get(0).addEventListener("dragover", function(evt) {		
 		evt.stopPropagation();
@@ -642,6 +608,46 @@ $(function() {
 			}
         }
 	});
+}
+
+$(function() {
+	
+	var project = getParameterByName("project");
+	
+	if (project) {
+		var edit = getParameterByName("edit");
+		
+		if (edit == "1") {
+			loadProjectEdit({id: project, edit: 1});
+			$('#submit').val("edit");
+		} else {
+			loadProject({id: project});
+			$('#project').hide();
+		}
+		
+	} else {
+		loadProjects();
+		
+		var loading = false;
+		
+		$(window).scroll(function(e) {
+			// Check if we reached bottom of the document
+			if(!loading && $(window).height() + $(window).scrollTop() >= $('#main').offset().top + $('#main').height() - $(window).height() / 20) {
+				if ($('#projects .project').length > 0) {
+					loading = true;
+					
+					loadProjects($('#projects .project').last().data("project").id, true, function() {
+						loading = false;
+					});
+				}
+					
+			}
+		});
+	}
+	
+	if ($('#project').length > 0) {
+		createProject();
+	}
 	
 	$('#error').on('click', '.error', function() {
 		$(this).remove();

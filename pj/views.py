@@ -91,7 +91,7 @@ def dict_member(member, user=None):
                    'contact': member.contact_info
                    }
     
-    if user:
+    if user and user.is_authenticated():
         if user == member.user:
             member_dict['check'] = 'verified'
         elif not member.user and user.email == member.contact_info:
@@ -162,7 +162,7 @@ def dict_project(project, raw=False, user=None):
     else:
         project_dict['description'] = markdown.markdown(project.description)
 
-    if user and project in Project.objects.filter(members__user=user):
+    if user and user.is_authenticated() and project in Project.objects.filter(members__user=user):
         project_dict['editable'] = True
     
     return project_dict
