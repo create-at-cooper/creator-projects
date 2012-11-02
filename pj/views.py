@@ -12,7 +12,7 @@ import markdown
 
 def api_login(request):
     if 'username' not in request.POST or 'password' not in request.POST:
-        return HttpResponse(json.dumps({'status': 'Username and password needed!'}))
+        return HttpResponse(json.dumps({'status': 'Username and password needed!'}), mimetype="application/json")
     
     username = request.POST['username']
     password = request.POST['password']
@@ -25,17 +25,17 @@ def api_login(request):
     if user is not None:
         if user.is_active:
             login(request, user)
-            return HttpResponse(json.dumps({'status': 'OK'}))
+            return HttpResponse(json.dumps({'status': 'OK'}), mimetype="application/json")
         else:
-            return HttpResponse(json.dumps({'status': 'Disabled account.'}))
+            return HttpResponse(json.dumps({'status': 'Disabled account.'}), mimetype="application/json")
     else:
-        return HttpResponse(json.dumps({'status': 'Invalid credentials.'}))
+        return HttpResponse(json.dumps({'status': 'Invalid credentials.'}), mimetype="application/json")
 
 @login_required
 def api_logout(request):
     logout(request)
     
-    return HttpResponse(json.dumps({'status': 'OK'}))
+    return HttpResponse(json.dumps({'status': 'OK'}), mimetype="application/json")
 
 def redirect_logout(request):
     logout(request)
@@ -71,7 +71,7 @@ def tag(request):
             pk = request.GET['id']
             tags = tags.filter(pk=pk)
             
-        return HttpResponse(json.dumps(list_tags(tags)))
+        return HttpResponse(json.dumps(list_tags(tags)), mimetype="application/json")
 
 def list_images(images):
     images_list = []
@@ -125,7 +125,7 @@ def member(request):
             pk = request.GET['id']
             members = members.filter(pk=pk)
             
-        return HttpResponse(json.dumps(list_members(members)))
+        return HttpResponse(json.dumps(list_members(members)), mimetype="application/json")
     
 @login_required
 @ensure_csrf_cookie
@@ -146,30 +146,37 @@ def post_member(request):
     else:
         result['status'] = 'No member id specified!'
     
-    return HttpResponse(json.dumps(result))
+    return HttpResponse(json.dumps(result), mimetype="application/json")
 
-def dict_project(project, user=None):
-    t = {'id': project.pk, 
-         'created': str(project.created),
-         'title': project.title,
-         'description': markdown.markdown(project.description),
-         'images': list_images(project.images.all()),
-         'tags': [str(tag) for tag in project.tags.all()],
-         'members': list_members(project.members.all(), user)
-         }
+def dict_project(project, raw=False, user=None):
+    project_dict = {'id': project.pk,
+                    'created': str(project.created),
+                    'title': project.title,
+                    'images': list_images(project.images.all()),
+                    'tags': [str(tag) for tag in project.tags.all()],
+                    'members': list_members(project.members.all(), user)
+                    }
     
-    return t
+    if raw:
+        project_dict['description'] = project.description
+    else:
+        project_dict['description'] = markdown.markdown(project.description)
 
-def list_projects(projects, user=None):
+    if user and project in Project.objects.filter(members__user=user):
+        project_dict['editable'] = True
+    
+    return project_dict
+
+def list_projects(projects, raw=False, user=None):
     """Returns a serialized string of the given projects."""
     list_projects = [] # empty list of projects
     for project in projects:
-        list_projects.append(dict_project(project, user))
+        list_projects.append(dict_project(project, raw, user))
         
     return list_projects
 
-def serialize_projects(projects, user=None):
-    return json.dumps(list_projects(projects, user));
+def serialize_projects(projects, raw=False, user=None):
+    return json.dumps(list_projects(projects, raw, user));
 
 @ensure_csrf_cookie
 def project(request):
@@ -230,7 +237,9 @@ def get_project(request):
     limit = int(request.GET.get('limit', '5')) 
     projects = projects[offset : offset + limit]
     
-    return HttpResponse(serialize_projects(projects, request.user), mimetype="application/json") # Send data back to the user.
+    raw = (request.GET.get('edit', '') == '1')
+    
+    return HttpResponse(serialize_projects(projects, raw, request.user), mimetype="application/json") # Send data back to the user.
 
 @login_required
 @ensure_csrf_cookie
@@ -239,97 +248,164 @@ def post_project(request):
     
     result = {'status' : 'OK'}
     
-    if len(request.FILES.items()) < 1: # make sure we have multiple choices
-        result['status'] = 'We need at least one image!'
-        return HttpResponse(json.dumps(result))
+    p = request.POST.get('project', False)
+    
+    if p:
+        try:
+            project = Project.objects.get(pk=p)
+        except ObjectDoesNotExist:
+            result['status'] = 'No project with id %s exists!' % p
+            return HttpResponse(json.dumps(result), mimetype="application/json")
+        
+        if request.user and project in Project.objects.filter(members__user=request.user):
+            pass
+        else:
+            result['status'] = 'Permission denied.'
+            return HttpResponse(json.dumps(result), mimetype="application/json")
+    
+    if not p:
+        if len(request.FILES.items()) < 1: # make sure we have multiple choices
+            result['status'] = 'We need at least one image!'
+            return HttpResponse(json.dumps(result), mimetype="application/json")
+        if len(request.FILES.items()) > 5: # limit number of images
+            result['status'] = 'Image limit reached.'
+            return HttpResponse(json.dumps(result), mimetype="application/json")
     
     if len(request.POST.get('title', '')) < 3:
         result['status'] = 'Title too short!'
-        return HttpResponse(json.dumps(result))
+        return HttpResponse(json.dumps(result), mimetype="application/json")
     
     if len(request.POST.get('description', '')) < 10:
         result['status'] = 'Description too short!'
-        return HttpResponse(json.dumps(result))
+        return HttpResponse(json.dumps(result), mimetype="application/json")
     
     # limit number of tags
     if int(request.POST.get('tags', '0')) > 10:
         result['status'] = 'Too many tags!'
-        return HttpResponse(json.dumps(result))
+        return HttpResponse(json.dumps(result), mimetype="application/json")
     
     # there should be at least one member
     if int(request.POST.get('members', '0')) < 1:
         result['status'] = 'Need at least one member.'
-        return HttpResponse(json.dumps(result))
+        return HttpResponse(json.dumps(result), mimetype="application/json")
     elif int(request.POST.get('members', '0')) > 10:
         result['status'] = 'Too many members!'
-        return HttpResponse(json.dumps(result))
+        return HttpResponse(json.dumps(result), mimetype="application/json")
     
-    if len(request.FILES.items()) > 5: # limit number of images
-        result['status'] = 'Image limit reached.'
-        return HttpResponse(json.dumps(result))
+    # verify member information
+    for i in range(0, int(request.POST.get('members', '0'))):
+        name = request.POST.get('member-name-' + str(i), '')
+        contact = request.POST.get('member-contact-' + str(i), '')
+        
+        if not name or not contact:
+            result['status'] = 'Missing contact information.'
+            return HttpResponse(json.dumps(result), mimetype="application/json")
+        
+        # Make sure name and contact info are of a certain length.
+        if len(name) < 3:
+            result['status'] = 'Name "%s" is too short!' % (name, )
+            return HttpResponse(json.dumps(result))
+        if len(contact) < 3:
+            result['status'] = 'Contact "%s" is too short!' % (contact, )
+            return HttpResponse(json.dumps(result), mimetype="application/json")
+    
+    # verify tags
+    for i in range(0, int(request.POST.get('tags', '0'))):
+        tag = request.POST.get('tag-' + str(i), '')
+        if len(tag) < 2:
+            result['status'] = 'Tag "%s" is too short!' % (tag, )
+            return HttpResponse(json.dumps(result), mimetype="application/json")
+        if len(tag) > 30:
+            result['status'] = 'Tag "%s" is too long!' % (tag, )
+            return HttpResponse(json.dumps(result), mimetype="application/json")
     
     # check filesizes
     for key, f in request.FILES.items(): #@UnusedVariable
         if f.size > 1048576:
             result['status'] = '%s is above the 1 MB image size limit.' % (f.name)
-            return HttpResponse(json.dumps(result))
-        
-    # check for duplicates
-    title = request.POST.get('title', '')
-    image_sizes = [int(f.size) for key, f in request.FILES.items()] #@UnusedVariable
-    compare = lambda x, y: collections.Counter(x) == collections.Counter(y)
+            return HttpResponse(json.dumps(result), mimetype="application/json")
     
-        # comparison
-    projects = Project.objects.filter(title=title)
-    for project in projects:
-        project_image_sizes = [int(image.image.size) for image in project.images.all()]
-        if compare(image_sizes, project_image_sizes):
-            result['status'] = 'This project is identical to a previous one.'
-            return HttpResponse(json.dumps(result))
+    title = request.POST.get('title', '')
+    
+    if not p:
+        # check for duplicates    
+        image_sizes = [int(f.size) for key, f in request.FILES.items()] #@UnusedVariable
+        compare = lambda x, y: collections.Counter(x) == collections.Counter(y)
+        
+            # comparison
+        projects = Project.objects.filter(title=title)
+        for project in projects:
+            project_image_sizes = [int(image.image.size) for image in project.images.all()]
+            if compare(image_sizes, project_image_sizes):
+                result['status'] = 'This project is identical to a previous one.'
+                return HttpResponse(json.dumps(result), mimetype="application/json")
         
     
     # Submission passed all checks, so create it!
     try:
         description = request.POST.get('description', '')
-        project = Project.objects.create(title=title, description=description, created_by=request.user)
         
+        if p:
+            project = Project.objects.get(pk=p)
+            project.title = title
+            project.description = description
+            project.save()
+        else:
+            project = Project.objects.create(title=title, description=description, created_by=request.user)
+        
+        if p:
+            images = []
+            for i in range(0, int(request.POST.get('image-ids', '0'))):
+                pk = request.POST.get('image-id-' + str(i), '')
+                images.append(pk)
+            
+            # remove all the images that are no longer in the list of images
+            project.images.exclude(pk__in=images).delete()
+            
         for key, f in request.FILES.items(): #@UnusedVariable
             image = Image(project=project)
             
             image.image.save(f.name, f, save=True)
             image.save()
         
-        if int(request.POST.get('members', '0')) > 0:
-            for i in range(0, int(request.POST.get('members', '0'))):
-                name = request.POST.get('member-name-' + str(i), '')
-                contact = request.POST.get('member-contact-' + str(i), '')
-                
-                if not name or not contact:
-                    result['status'] = 'Missing contact information.'
-                    return HttpResponse(json.dumps(result))
-                
-                # Make sure name and contact info are of a certain length.
-                if len(name) < 3:
-                    result['status'] = '"%s" is too short!' % (name, )
-                    return HttpResponse(json.dumps(result))
-                if len(contact) < 3:
-                    result['status'] = '"%s" is too short!' % (contact, )
-                    return HttpResponse(json.dumps(result))
-                
-                member, created = Member.objects.get_or_create(name=name, contact_info=contact) #@UnusedVariable
+        members = []
+        for i in range(0, int(request.POST.get('members', '0'))):
+            name = request.POST.get('member-name-' + str(i), '')
+            contact = request.POST.get('member-contact-' + str(i), '')
+            
+            member, created = Member.objects.get_or_create(name=name, contact_info=contact) #@UnusedVariable
+                    
+            if p:
+                members.append(member)
+            else:
                 project.members.add(member)
         
-        if int(request.POST.get('tags', '0')) > 0:
-            for i in range(0, int(request.POST.get('tags', '0'))):
-                tag_str = request.POST.get('tag-' + str(i), '')
-                if len(tag_str) > 1:
-                    tag, created = Tag.objects.get_or_create(name=tag_str.lower()) #@UnusedVariable
-                    project.tags.add(tag)
+        if p:
+            for member in set(project.members.all()) - set(members):
+                project.members.remove(member)
+            for member in members:
+                project.members.add(member)
         
-        result['project'] = dict_project(project)
+        tags = []
+        for i in range(0, int(request.POST.get('tags', '0'))):
+            tag_str = request.POST.get('tag-' + str(i), '')
+            
+            tag, created = Tag.objects.get_or_create(name=tag_str.lower()) #@UnusedVariable
+            if p:
+                tags.append(tag)
+            else:
+                project.tags.add(tag)
+            
+        if p:
+            for tag in set(project.tags.all()) - set(tags):
+                project.tags.remove(tag)
+            for tag in tags:
+                project.tags.add(tag)
+        
+        result['project'] = dict_project(project, p is not None, request.user)
     except Exception as e:
-        if project:
+        if project and not p:
             project.delete()
         result['status'] = str(e)
     
-    return HttpResponse(json.dumps(result))
+    return HttpResponse(json.dumps(result), mimetype="application/json")

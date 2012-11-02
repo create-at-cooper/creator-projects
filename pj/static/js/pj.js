@@ -46,6 +46,10 @@ function addProject(project, append) {
 	
 	projectDiv.append(title);
 	
+	if (project.editable == true) {
+		$('<a>').addClass("edit").attr('href', '?project=' + project.id + '&edit=1').html("edit").appendTo(title);
+	}
+	
 	var members = $('<div>').addClass('members');
 	$.each(project.members, function(i, member) {
 		var memberDiv = $('<div>').addClass('info');
@@ -118,6 +122,78 @@ function addProject(project, append) {
 	
 }
 
+function clearProject(callback) {
+	// empty list of files
+	$('#images').empty();
+	$('#title').val('');
+	$('#description').val('');
+	$('#fileselect').val('');
+	$('#members_list').empty();
+	$('#member_contact').val('');
+	$('#member_name').val('');
+
+	newImages = [];
+	$('#error').empty();
+	
+	if ($('#tags').tagit("assignedTags").length > 0) {
+		var timer;
+		
+		// crazy hack to deal with the fact that assignedtags is not cleared
+		// immediately when removeall is cleared
+		// so tags are visually gone but cannot be added
+		$("#tags").tagit({
+		    onTagRemoved: function() {
+		    	if (timer)
+		    		return;
+		    	
+		    	timer = setTimeout(function() {
+			    	if ($('#tags').tagit("assignedTags").length == 0) {
+			    		if($.isFunction(callback))
+			    			callback();
+			    		
+			    		$("#tags").tagit({
+			    		    onTagRemoved: null
+			    		});
+			    		timer = undefined;
+			    	}
+			    }, 100)
+		    }
+		});
+		
+		$('#tags').tagit("removeAll");
+	} else {
+		callback();
+	}
+	
+}
+
+function editProject(project) {
+	$('#title').val(project.title);
+	$('#description').val(project.description);
+	
+	$.each(project.members, function(i, member) {
+		addMember(member.name, member.contact);
+	})
+	
+	$.each(project.tags, function(i, tag) {
+		$("#tags").tagit("createTag", tag);
+	});
+	
+	$.each(project.images, function(i, image) {
+		addImage(image, image.image);
+	})
+}
+
+function loadProjectEdit(query) {
+	$.getJSON("/api/project", query, function(data) {
+		projects = projects.concat(data);
+		
+		$.each(data, function(i, project) {
+			editProject(project);
+		});
+	});
+}
+
 function loadProject(query) {
 	$.getJSON("/api/project", query, function(data) {
 		projects = projects.concat(data);
@@ -152,34 +228,9 @@ function loadProjects(before_id, append, callback) {
 	});
 }
 
-function markVotes() {
-	$.each(votes, function(i, v) {
-		$.each(projects, function(j, project) {
-			$.each(project.images, function(k, choice) {
-				if (v.id == choice.id) {
-					choice.votes = v.votes;
-					vote(choice);
-				}
-			});
-		});
-	});
-}
-
-function vote(choice) {
-	if (choice.div.hasClass("chosen")) {
-		$("span.votes", choice.div).html(choice.votes);
-	} else {
-		choice.div.addClass("chosen");
-		$('<span>').addClass('votes').html(choice.votes).appendTo(choice.div);
-	}
-	
-	$(choice.div).parent().addClass("voted");
-	$('#error').empty();
-}
-
 // FILE STUFF
 
-var artFiles = [];
+var newImages = [];
 var loaded = [];
 
 function displayError(message) {
@@ -242,17 +293,21 @@ function handleFiles(files) {
 }
 
 function handleReaderLoadEnd(image, event) {
-	if (artFiles.length >= maxFiles) {
+	addImage(image, event.target.result);
+}
+
+function addImage(image, url) {
+	if (newImages.length >= maxFiles) {
 		displayError("Image limit reached.");
 		return;
 	}
 	
-	artFiles.push(image);
+	newImages.push(image);
 	
 	var uchoice = $('<div class="uchoice" style="margin: 2pt; display: inline-block; position: relative; overflow: hidden; width: 160px"></div>').append(
 			'<div class="remove"' +
 					'style="color: gray; position: absolute; top: -8px; right: 0px; height: 25px"><table cellspacing="0" cellpadding="0" style="font-family: arial, sans-serif; font-size: 28px;"><tbody><tr><td>&#215;</td></tr></tbody></table></div><img style="width:160px" src="'
-							+ event.target.result + '"/>').data("image", image);
+							+ url + '"/>').data("image", image);
 	$('#images').append(uchoice);
 
 	$('#images .remove').hover(function() {
@@ -291,12 +346,65 @@ function buildQuery() {
 	return q;
 }
 
+
+function addMember(name, contact) {
+	var member = $('<li>').addClass('member');
+	
+	$('<input>').addClass('name').attr({
+		type: "text",
+		maxlength: 140,
+		placeholder: "member name"
+	}).val(name).appendTo(member);
+	
+	$('<input>').addClass('contact').attr({
+		type: "text",
+		maxlength: 256,
+		placeholder: "contact"
+	}).val(contact).appendTo(member);
+	
+	$('<button>').addClass('remove').html("&#215;").appendTo(member);
+	
+	$('#members_list').append(member);
+}
+
+function addMemberEvent(e) {
+	if (e)
+		e.preventDefault();
+	
+	var name = $('#member_name').val();
+	if (name.length < 2)
+		displayError("Member name is too short!");
+	else if (name.length > 140)
+		displayError("Member name is too long!");
+	
+	var contact = $('#member_contact').val();
+	if (contact.length < 3)
+		displayError("Member contact information is too short!");
+	else if (contact.length > 256)
+		displayError("Member contact information is too long!");
+	
+	addMember(name, contact);
+	
+	$('#member_contact').val("");
+	$('#member_name').val("");
+	$('#member_name').focus();
+}
+
 $(function() {
 	
 	var project = getParameterByName("project");
 	
 	if (project) {
-		loadProject({id: project});
+		var edit = getParameterByName("edit");
+		
+		if (edit == "1") {
+			loadProjectEdit({id: project, edit: 1});
+			$('#submit').val("edit");
+		} else {
+			loadProject({id: project});
+			$('#project').hide();
+		}
+		
 	} else {
 		loadProjects();
 		
@@ -336,7 +444,7 @@ $(function() {
 	$('#project').submit(function(e) {
 		e.preventDefault();
 		
-		if (artFiles.length < 1) {
+		if (newImages.length < 1) {
 			displayError("We need at least one image!");
 			return;
 		}
@@ -375,9 +483,20 @@ $(function() {
 			data.append('tag-' + i, tag);
 		});
 		
-		for (var i = 0; i < artFiles.length && i < maxFiles; i++) {
-			data.append(i, artFiles[i]);
+		
+		var image_ids = 0;
+		for (var i = 0; i < newImages.length && i < maxFiles; i++) {
+			if (newImages[i].id) {
+				data.append('image-id-' + image_ids, newImages[i].id);
+				image_ids++;
+			} else
+				data.append(i, newImages[i]);
 		}
+		
+		data.append('image-ids', image_ids);
+		
+		if (project)
+			data.append('project', project);
 
 		$.ajax({
 			url: "/api/project",
@@ -386,24 +505,16 @@ $(function() {
 			processData: false,
 			contentType: false,
 			type: "POST",
-			success: function(data) {				
-				data = $.parseJSON(data);
-				
+			success: function(data) {
 				if (data.status == 'OK') {
-					addProject(data.project);
-					
-					// empty list of files
-					$('#images').empty();
-					$('#title').val('');
-					$('#description').val('');
-					$("#fileselect").val('');
-					$("#members_list").empty();
-					$('#member_contact').val("");
-					$('#member_name').val("");
-					$("#tags").tagit("removeAll");
-					artFiles = [];
-					
-					$('#error').empty();
+					if (project) {
+						clearProject(function() {
+							editProject(data.project);
+						});
+					} else {
+						addProject(data.project);
+						clearProject();
+					}
 				} else {
 					displayError(data.status);
 				}
@@ -413,48 +524,22 @@ $(function() {
 	});
 	
 	$('#images').on('click', '.remove', function() {	
-		for (var i = 0; i < artFiles.length; i++) {
-			if ($(this).parent().data("image") == artFiles[i]) {
-				artFiles.splice(i, 1);
+		for (var i = 0; i < newImages.length; i++) {
+			if ($(this).parent().data("image") == newImages[i]) {
+				newImages.splice(i, 1);
 				$(this).parent().remove();
 				break;
 			}
 		}
 	});
 	
-	function addMember(e) {
-		var member = $('<li>').addClass('member');
-		
-		$('<input>').addClass('name').attr({
-			type: "text",
-			maxlength: 140,
-			placeholder: "member name"
-		}).val($('#member_name').val()).appendTo(member);
-		
-		$('<input>').addClass('contact').attr({
-			type: "text",
-			maxlength: 256,
-			placeholder: "contact"
-		}).val($('#member_contact').val()).appendTo(member);
-		
-		$('#member_contact').val("");
-		$('#member_name').val("");
-		$('#member_name').focus();
-		
-		$('<button>').addClass('remove').html("&#215;").appendTo(member);
-		
-		$('#members_list').append(member);
-		
-		e.preventDefault();
-	}
-	
 	$('#member_contact, #member_name').focus().keypress(function(e){
         if (e.which == 13) {
-            addMember(e);
+            addMemberEvent(e);
         }
     });
 	
-	$('#add_member').click(addMember);
+	$('#add_member').click(addMemberEvent);
 	
 	$('#members_list').on('click', '.remove', function() {
 		$(this).parent().remove();
@@ -521,8 +606,9 @@ $(function() {
 	$("#tags").tagit({
 		caseSensitive: false,
 		allowSpaces: true,
-		removeConfirmation: true,
+		removeConfirmation: false,
 		placeholderText: "tags",
+		tabIndex: 8,
 		tagSource: function(search, showChoices) {
 			
 			if (search.term != old_search_tag) {

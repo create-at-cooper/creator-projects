@@ -12,7 +12,7 @@ class Project(models.Model):
     slug = models.SlugField(blank=True)
     description = models.TextField(blank=True)
     
-    members = models.ManyToManyField('Member', null=True, blank=True)
+    members = models.ManyToManyField('Member', related_name='projects', null=True, blank=True)
     
     period = models.CharField(max_length=100)
     start_time = models.DateTimeField(blank=True, null=True)

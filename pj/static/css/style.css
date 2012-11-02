@@ -300,6 +300,7 @@ div, input {
 	padding-left: 1%;
 	padding-top: 2pt;
 	padding-bottom: 2pt;
+	padding-right: 1%;
 	
 	margin-bottom: 2pt;
 }
@@ -308,6 +309,16 @@ div, input {
 	color: #E04D6B;
 	
 	font-size: 14pt;
+}
+
+.title .edit {
+	color: white;
+	font-weight: 500;
+	float: right;
+}
+
+.title .edit:hover {
+	color: black;
 }
 
 .images {
