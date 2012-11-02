@@ -686,8 +686,9 @@ $(function() {
 				var new_tags = [];
 				
 				$.map(data, function(tag) {
+					tag.url = '?tag=' + tag.name;
+					
 					if (tagMap[tag.name] === undefined) {
-						tag.url = '?tag=' + tag.name;
 						new_tags.push(tag.name);
 						tagMap[tag.name] = tag;
 					}
@@ -706,8 +707,9 @@ $(function() {
 				var new_members = [];
 				
 				$.map(data, function(member) {
+					member.url = '?member=' + member.id;
+					
 					if (memberMap[member.name] === undefined) {
-						member.url = '?member=' + member.id;
 						new_members.push(member.name);
 						memberMap[member.name] = member;
 					}
