@@ -390,6 +390,20 @@ function addMemberEvent(e) {
 	$('#member_name').focus();
 }
 
+function getMembers() {
+	var members = [];
+	$('#members_list .member').each(function(i, div) {
+		if ($('.name', div).val() && $('.contact', div).val()) {
+			members.push({
+				name: $('.name', div).val(),
+				contact: $('.contact', div).val()
+			});
+		}
+	});
+	
+	return members;
+}
+
 $(function() {
 	
 	var project = getParameterByName("project");
@@ -454,15 +468,7 @@ $(function() {
 		data.append('description', $('#description').val());
 		
 		
-		var members = [];
-		$('#members_list .member').each(function(i, div) {
-			if ($('.name', div).val() && $('.contact', div).val()) {
-				members.push({
-					name: $('.name', div).val(),
-					contact: $('.contact', div).val()
-				});
-			}
-		});
+		var members = getMembers();
 		
 		if (members.length < 1) {
 			displayError("We need at least one member!");
@@ -547,34 +553,37 @@ $(function() {
 	
 	var pjMembers  = [];
 	var pjMemberMap = {};
-	var old_search_member;
 	
 	$('#member_name').autocomplete({
 		minLength: 0,
 		source: function(request, response) {
-			if (old_search_member != request.term) {
-				$.get("api/member", {name: request.term}, function(data) {		
-					var new_members = [];
+			if (request.term.length == 0)
+				response([]);
+			
+			var respMembers = pjMembers;
+			
+			$.get("api/member", {name: request.term}, function(data) {
+				respMembers = data;
+				
+				// keep complete list of members
+				var new_members = [];
+				
+				$.map(data, function(member) {
+					member.id == undefined;
 					
-					$.map(data, function(member) {
-						member.value = member.name;
-						
-						if (pjMemberMap[member.name] === undefined) {
-							new_members.push(member);
-							pjMemberMap[member.name] = member;
-						}
-					});
-					
-					$.merge(pjMembers, new_members);
-				}, "json").complete(function() {
-					response(pjMembers);
+					if (pjMemberMap[member.name] === undefined) {
+						new_members.push(member);
+						pjMemberMap[member.name] = member;
+					}
 				});
-			} else {
-				response(pjMembers);
-			}
+				
+				$.merge(pjMembers, new_members);
+			}, "json").complete(function() {
+				response(subtractArray(respMembers, getMembers()));
+			});
 		},
 		select: function(event, ui) {
-			$('#member_name').val(ui.item.value);
+			$('#member_name').val(ui.item.name);
 			$('#member_contact').val(ui.item.contact);
 			$('#add_member').click();
 			
@@ -583,7 +592,7 @@ $(function() {
 	}).data("autocomplete")._renderItem = function(ul, item) {
 		return $("<li>")
 		.data("item.autocomplete", item)
-		.append("<a><span class='suggest name'>" + item.value + "</span>" +
+		.append("<a><span class='suggest name'>" + item.name + "</span>" +
 				"<br><span class='suggest contact'>" + item.contact + "</span></a>" )
 		.appendTo(ul);
 	};
