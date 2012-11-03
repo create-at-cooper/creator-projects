@@ -14,7 +14,7 @@
 
 
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-ui-1.9.0.custom.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-ui-1.9.1.custom.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/tag-it.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/pj.js"></script>
 
@@ -53,10 +53,12 @@
 		<div id="acct"><a href="{% if user.is_authenticated %}logout{% else %}login{% endif %}">{% if user.is_authenticated %}logout{% else %}login{% endif %}</a></div>
 	</header>
 
+	<div id="filters"></div>
+
 	<form id="search">
 		<input type="text" name="q" id="query" tabindex="1" placeholder="search"/>
 	</form>
-
+	
 	{% if user.is_authenticated %}
 	{% spaceless %}
 	<form id="project">

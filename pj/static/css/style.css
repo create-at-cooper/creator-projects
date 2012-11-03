@@ -4,7 +4,6 @@ html, body {
 }
 
 body {
-	position: relative;
 	margin: 8pt;
 	overflow-x: hidden;
 }
@@ -47,7 +46,7 @@ header h1 {
 
 footer {
 	font-family: 'Source Sans Pro', sans-serif;
-	font-weight: 500;
+	font-weight: 400;
 	font-size: 10pt;
 }
 
@@ -132,15 +131,17 @@ p {
 
 #tags {
 	font-family: 'Source Sans Pro', sans-serif;
-	font-size: 14pt;
+	font-size: 16pt;
 	font-weight: 400;
 	margin-top: 8pt;
+	
+	padding: 2pt 8pt 2pt 8pt;
 }
 
 #acct {
 	position: absolute;
-	top: 0px;
-	right: 0px;
+	top: 0;
+	right: 0;
 	
 	font-family: 'Source Sans Pro', sans-serif;
 	font-size: 14pt;
@@ -154,8 +155,8 @@ p {
 }
 
 div, input {
-	margin: 0px;
-	padding: 0px;
+	margin: 0;
+	padding: 0;
 }
 
 #project {
@@ -184,21 +185,58 @@ div, input {
 
 #query {
 	font-size: 24pt;
-	
 	font-family: 'Source Sans Pro', sans-serif;
-	font-weight: 500;
+	font-weight: 400;
 	
-	margin-top: 12px;
-	margin-bottom: 12px;
+	margin-top: 8pt;
 	
-	width: 99%;
+	border: 8pt solid lightgray;
+    padding: 2pt 8pt 2pt 8pt;
+    
+    color: black;
+    font-weight: 900;
+    
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;         /* Opera/IE 8+ */
+    
+    width: 100%;
+}
+
+#query:focus {
+	outline: none;
+	border-color: gray;
+}
+
+.ui-corner-all {
+    border-radius: 0px;
+}
+.ui-widget-content {
+    border: 8pt solid lightgray;
+    padding: 0px;
+}
+.ui-menu .ui-menu-item, .ui-menu .ui-menu-item a {
+    font-size: 18pt;
+    font-family: 'Source Sans Pro', sans-serif;
+	font-weight: 400;
+}
+.ui-menu .ui-state-focus {
+    background-image: none;
+    background-color: darkgray;
+    color: white;
+}
+
+.ui-widget-content .ui-state-default {
+	background-image: none;
+    background-color: lightgray;
+    color: black;
 }
 
 #title {
 	font-size: 24pt;
 	
 	font-family: 'Source Sans Pro', sans-serif;
-	font-weight: 500;
+	font-weight: 400;
 	
 	margin-top: 12px;
 	margin-bottom: 12px;
@@ -265,8 +303,10 @@ div, input {
 #members .member, #member {
 	margin-top: 4pt;
 	width: 100%;
+	display: block;
+	margin-right: 0;
 	
-	vertical-align: center;
+	vertical-align: middle;
 }
 
 #member_name, #members .name {
@@ -277,6 +317,10 @@ div, input {
 	
 	display: inline-block;
 	width: 35%;
+	
+	padding: 0;
+	background-color: white;
+	color: black;
 }
 
 #member_contact, #members .contact {
@@ -290,6 +334,10 @@ div, input {
 	
 	margin-left: 1%;
 	margin-right: .5%;
+	
+	padding: 0;
+	background-color: white;
+	color: black;
 }
 
 #add_member, #members .remove {
@@ -297,6 +345,31 @@ div, input {
 	width: 5%;
 	
 	float: right;
+}
+
+#filters {
+	margin-top: 16pt;
+	
+	font-family: 'Source Sans Pro', sans-serif;
+	font-size: 20pt;
+	font-weight: 400;
+}
+
+#filters .tags {
+	text-align: left;
+}
+
+#filters .tag {
+	display: inline-block;
+	
+	background-color: LightGray;
+	margin-left: 0;
+	margin-right: 8pt;
+	margin-bottom: 8pt;
+	
+	padding: 2pt 8pt 2pt 8pt;
+	
+	color: black;
 }
 
 .clear {
@@ -333,7 +406,7 @@ div, input {
 
 .title .edit {
 	color: white;
-	font-weight: 500;
+	font-weight: 400;
 	float: right;
 }
 
@@ -347,10 +420,14 @@ div, input {
 	display: inline-block;
 }
 
-#projects .tags {
+#projects {
+	margin-top: 8pt;
+}
+
+.tags {
 	font-size: 20pt;	
 	font-family: 'Source Sans Pro', sans-serif;
-	font-weight: 500;
+	font-weight: 400;
 	
 	margin-top: 8pt;
 	margin-bottom: 8pt;
@@ -358,20 +435,29 @@ div, input {
 	text-align: right;
 }
 
-#projects .tag, #projects .tag:link, #projects .tag:visited {
+.tag, .tag:link, .tag:visited {
 	margin-left: 16pt;
 	color: gray;
 }
 
-#projects .tag:hover {
+.tag:hover {
 	color: black;
 }
 
 .image {
 	display: inline-block;
-	max-width: 300px;
-	
-	color: white;
+	max-width: 320px;
+	overflow: hidden;
+}
+.image:hover {
+	cursor: pointer;
+}
+
+.image-large {
+	width: 100%;
+}
+.image-large:hover {
+	cursor: pointer;
 }
 
 .image img {
@@ -399,24 +485,29 @@ div, input {
 	font-weight: 400;
 }
 
-#projects .member .info {
+.member {
+	display: inline;
+	margin-right: 8pt;
+}
+
+.member .info {
 	display: inline-block;
 	margin-bottom: 8pt;
 }
 
-#projects .member .name {
+.member .name {
 	display: inline-block;
 	
 	padding: 2pt 8pt 2pt 8pt;
 	background-color: LightGray;
 }
 
-#projects .member .name:hover {
+.member .name:hover {
 	background-color: gray;
 	color: white;
 }
 
-#projects .member .contact {
+.member .contact {
 	display: inline-block;
 	
 	padding: 2pt 8pt 2pt 8pt;
@@ -424,7 +515,7 @@ div, input {
 	color: white;
 }
 
-#projects .member .contact:hover {
+.member .contact:hover {
 	background-color: gray;
 	color: white;
 }
@@ -444,9 +535,4 @@ div, input {
 	color: white;
 	
 	cursor: pointer;
-}
-
-#projects .member {
-	display: inline;
-	margin-right: 8pt;
 }

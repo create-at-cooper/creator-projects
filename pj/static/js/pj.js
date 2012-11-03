@@ -89,14 +89,24 @@ function addProject(project, append) {
 		}
 	});
 	
-	// TODO: do something if user clicks check
-	
 	members.appendTo(projectDiv);
 	
 	var images = $("<div>").addClass("images");
 	
 	$.each(project.images, function(j, image) {		
-		image.div = $("<div>").addClass("image").css("width", 100 / project.images.length + "%");
+		image.div = $("<div>").addClass("image").css("width", 100 / project.images.length + "%").click(function(event) {
+			event.preventDefault();
+			
+			if ($(this).hasClass('image-large')) {
+				$(this).removeClass('image-large').addClass('image');
+				$('.image', images).css("width", 100 / project.images.length + "%").show();
+			} else {
+				$(this).removeClass('image').addClass('image-large');
+				$(this).css("width", "");
+				$(this).siblings().hide();
+			}
+		});
+		
 		$("<img>").attr("src", image.image).appendTo(image.div);
 		
 		images.append(image.div);
@@ -630,12 +640,42 @@ $(function() {
 		
 	} else {
 		
-		var query = getParameterByName("q");
-		$('#query').val(query);
+		var q = buildQuery();
+		$('#query').val(q.q);
+		
+		if (q.member) {			
+			$.getJSON("/api/member", {id: q.member}, function(data) {
+				$.each(data, function(i, member) {
+					var memberDiv = $('<div>').addClass('info');
+					
+					$('<div>').addClass('member').append(memberDiv).appendTo($('#filters'));
+					
+					$('<a>').addClass("name").attr("href", "?member=" + member.id).html(member.name).appendTo(memberDiv);
+					
+					var contact;
+					
+					if (member.contact.search("@") > 0 && member.contact.search("@") > 1) {
+						contact = $('<a>').attr("href", "mailto:" + member.contact);
+					} else {
+						contact = $('<a>').attr("href", member.contact);;
+					}
+					
+					contact.addClass("contact").html(member.contact).appendTo(memberDiv);
+				});
+			});
+		}
+		
+		if (q.tag) {
+			var tags = q.tag.split(",");
+			
+			$.each(tags, function(i, tag) {
+				$('<a>').addClass('tag').attr("href", "?tag=" + tag).html(tag).appendTo($('#filters'));
+			});
+		}
 		
 		loadProjects(undefined, false, function(projects) {
 			if (projects.length == 0)
-				displayError('No projects found for "' + query + '"');
+				displayError('No projects found for "' + q.q + '"');
 		});
 		
 		var loading = false;
@@ -724,8 +764,8 @@ $(function() {
 			});
 		},
 		focus: function(event, ui) {
-			if (ui.item.name)
-				$('#query').val(ui.item.name);
+			/*if (ui.item.name)
+				$('#query').val(ui.item.name);*/
 			
 			return false;
 		},
@@ -734,7 +774,7 @@ $(function() {
 				window.location = ui.item.url;
 			
 			return false;
-		}
+		},
 	}).data("autocomplete")._renderItem = function(ul, item) {
 		
 		var entry = $('<li>').data('item.autocomplete', item);

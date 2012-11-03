@@ -124,8 +124,12 @@ def member(request):
             members = members.filter(Q(name__istartswith=f) | Q(contact_info__istartswith=f))            
             
         if 'id' in request.GET:
-            pk = request.GET['id']
-            members = members.filter(pk=pk)
+            ids = request.GET['id']
+            if len(ids) > 0:
+                pk = [int(n) for n in ids.split(',')]
+                members = members.filter(pk__in=pk)
+            else:
+                return HttpResponse([], mimetype="application/json")
             
         return HttpResponse(json.dumps(list_members(members)), mimetype="application/json")
     
@@ -201,7 +205,7 @@ def get_project(request):
             pk = [int(n) for n in ids.split(',')]
             projects = projects.filter(pk__in=pk)
         else:
-            return HttpResponse([])
+            return HttpResponse([], mimetype="application/json")
    
     if 'tag' in request.GET:
         tags = request.GET['tag']
@@ -209,7 +213,7 @@ def get_project(request):
             tags = tags.split(',')
             projects = projects.filter(tags__name__in=tags)
         else:
-            return HttpResponse([])
+            return HttpResponse([], mimetype="application/json")
         
     if 'name' in request.GET:
         members = request.GET['name']
@@ -217,7 +221,7 @@ def get_project(request):
             members = members.split(',')
             projects = projects.filter(members__name__in=members)
         else:
-            return HttpResponse([])
+            return HttpResponse([], mimetype="application/json")
         
     if 'member' in request.GET:
         members = request.GET['member']
@@ -225,7 +229,7 @@ def get_project(request):
             members = members.split(',')
             projects = projects.filter(members__pk__in=members)
         else:
-            return HttpResponse([])
+            return HttpResponse([], mimetype="application/json")
    
     if 'since' in request.GET:
         since = datetime.datetime.strptime(request.GET['since'], '%Y-%m-%d %H:%M:%SZ')
