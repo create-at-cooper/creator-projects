@@ -633,6 +633,7 @@ $(function() {
 		if (edit == "1") {
 			loadProjectEdit({id: project, edit: 1});
 			$('#submit').val("edit");
+			$('#project').show();
 		} else {
 			loadProject({id: project});
 			$('#project').hide();
@@ -640,11 +641,22 @@ $(function() {
 		
 	} else {
 		
+		$('#add-project').click(function(event) {
+			if ($('#project').css('display') == 'none') {
+				$('#project').show();
+			} else {
+				$('#project').hide();
+			}
+		});
+		
 		var q = buildQuery();
 		$('#query').val(q.q);
 		
 		if (q.member) {			
 			$.getJSON("/api/member", {id: q.member}, function(data) {
+				if (data.length > 0)
+					$('#filters').show();
+				
 				$.each(data, function(i, member) {
 					var memberDiv = $('<div>').addClass('info');
 					
@@ -667,6 +679,9 @@ $(function() {
 		
 		if (q.tag) {
 			var tags = q.tag.split(",");
+			
+			if (tags.length > 0)
+				$('#filters').show();
 			
 			$.each(tags, function(i, tag) {
 				$('<a>').addClass('tag').attr("href", "?tag=" + tag).html(tag).appendTo($('#filters'));

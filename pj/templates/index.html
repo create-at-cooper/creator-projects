@@ -60,10 +60,10 @@
 	</form>
 	
 	{% if user.is_authenticated %}
+	<div id="add-project" class="title">add project</div>
+	
 	{% spaceless %}
 	<form id="project">
-		<div class="title">add project</div>
-		
 		<input type="text" name="title" id="title" tabindex="2" maxlength="140" placeholder="project title"/>
 		
 		<input type="submit" id="submit" tabindex="9" value="post"></input>
