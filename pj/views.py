@@ -258,13 +258,13 @@ def post_project(request):
     
     result = {'status' : 'OK'}
     
-    p = request.POST.get('project', False)
+    project_id = request.POST.get('project_id', False)
     
-    if p:
+    if project_id:
         try:
-            project = Project.objects.get(pk=p)
+            project = Project.objects.get(pk=project_id)
         except ObjectDoesNotExist:
-            result['status'] = 'No project with id %s exists!' % p
+            result['status'] = 'No project with id %s exists!' % project_id
             return HttpResponse(json.dumps(result), mimetype="application/json")
         
         if request.user and project in Project.objects.filter(members__user=request.user):
@@ -273,7 +273,7 @@ def post_project(request):
             result['status'] = 'Permission denied.'
             return HttpResponse(json.dumps(result), mimetype="application/json")
     
-    if not p:
+    if not project_id:
         if len(request.FILES.items()) < 1: # make sure we have multiple choices
             result['status'] = 'We need at least one image!'
             return HttpResponse(json.dumps(result), mimetype="application/json")
@@ -337,7 +337,7 @@ def post_project(request):
     
     title = request.POST.get('title', '')
     
-    if not p:
+    if not project_id:
         # check for duplicates    
         image_sizes = [int(f.size) for key, f in request.FILES.items()] #@UnusedVariable
         compare = lambda x, y: collections.Counter(x) == collections.Counter(y)
@@ -355,15 +355,15 @@ def post_project(request):
     try:
         description = request.POST.get('description', '')
         
-        if p:
-            project = Project.objects.get(pk=p)
+        if project_id:
+            project = Project.objects.get(pk=project_id)
             project.title = title
             project.description = description
             project.save()
         else:
             project = Project.objects.create(title=title, description=description, created_by=request.user)
         
-        if p:
+        if project_id:
             images = []
             for i in range(0, int(request.POST.get('image-ids', '0'))):
                 pk = request.POST.get('image-id-' + str(i), '')
@@ -385,12 +385,12 @@ def post_project(request):
             
             member, created = Member.objects.get_or_create(name=name, contact_info=contact) #@UnusedVariable
                     
-            if p:
+            if project_id:
                 members.append(member)
             else:
                 project.members.add(member)
         
-        if p:
+        if project_id:
             for member in set(project.members.all()) - set(members):
                 project.members.remove(member)
             for member in members:
@@ -401,20 +401,20 @@ def post_project(request):
             tag_str = request.POST.get('tag-' + str(i), '')
             
             tag, created = Tag.objects.get_or_create(name=tag_str.lower()) #@UnusedVariable
-            if p:
+            if project_id:
                 tags.append(tag)
             else:
                 project.tags.add(tag)
             
-        if p:
+        if project_id:
             for tag in set(project.tags.all()) - set(tags):
                 project.tags.remove(tag)
             for tag in tags:
                 project.tags.add(tag)
         
-        result['project'] = dict_project(project, p is not None, request.user)
+        result['project'] = dict_project(project, project_id is not None, request.user)
     except Exception as e:
-        if project and not p:
+        if project and not project_id:
             project.delete()
         result['status'] = str(e)
     

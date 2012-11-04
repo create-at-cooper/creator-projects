@@ -39,7 +39,7 @@ if os.environ.get('LOCAL_DEV', 'True') == 'False':
                    }
     AWS_QUERYSTRING_AUTH = False
     
-    #DEBUG = False
+    DEBUG = False
 else:
     DATABASES = {
         'default': {

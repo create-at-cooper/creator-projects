@@ -481,8 +481,10 @@ function createProject() {
 		
 		data.append('image-ids', image_ids);
 		
-		if (project)
-			data.append('project', project);
+		var project_id = getParameterByName("project");
+		
+		if (project_id)
+			data.append('project_id', project_id);
 
 		$.ajax({
 			url: "/api/project",
@@ -493,7 +495,7 @@ function createProject() {
 			type: "POST",
 			success: function(data) {
 				if (data.status == 'OK') {
-					if (project) {
+					if (project_id) {
 						clearProject(function() {
 							editProject(data.project);
 						});
@@ -504,7 +506,9 @@ function createProject() {
 				} else {
 					displayError(data.status);
 				}
-				
+			},
+			error: function() {
+				displayError("Something went wrong!");
 			}
 		});
 	});
@@ -689,8 +693,12 @@ $(function() {
 		}
 		
 		loadProjects(undefined, false, function(projects) {
-			if (projects.length == 0)
-				displayError('No projects found for "' + q.q + '"');
+			if (projects.length == 0) {
+				if (q.q)
+					displayError('No projects found for "' + q.q + '"');
+				else
+					displayError('No projects found!');
+			}
 		});
 		
 		var loading = false;
