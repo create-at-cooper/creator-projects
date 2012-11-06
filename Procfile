@@ -1,1 +1,1 @@
-web: gunicorn pj.wsgi -b 0.0.0.0:$PORT -w 6
+web: gunicorn projects.wsgi -b 0.0.0.0:$PORT -w 6
