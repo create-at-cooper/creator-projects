@@ -14,7 +14,7 @@ class Project(models.Model):
     
     members = models.ManyToManyField('Member', related_name='projects', null=True, blank=True)
     
-    period = models.CharField(max_length=100)
+    period = models.CharField(max_length=100, blank=True, null=True)
     start_time = models.DateTimeField(blank=True, null=True)
     end_time = models.DateTimeField(blank=True, null=True)
     

@@ -8,19 +8,18 @@ from pj.models import Project, Image, Tag, Member
 
 class ImageInline(admin.TabularInline):
     model = Image
-class TagInline(admin.TabularInline):
-    model = Tag
 class MemberInline(admin.TabularInline):
-    model = Member
+    model = Project.members.through
 
 class ProjectAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     
     inlines = [
                ImageInline, 
-               TagInline,
                MemberInline
                ]
+    
+    exclude = ('members', )
 
 class ImageAdmin(admin.ModelAdmin):
     pass
