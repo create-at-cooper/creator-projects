@@ -375,7 +375,7 @@ function addMember(name, contact) {
 	$('<input>').addClass('contact').attr({
 		type: "text",
 		maxlength: 256,
-		placeholder: "contact"
+		placeholder: "contact info (optional)"
 	}).val(contact).appendTo(member);
 	
 	$('<button>').addClass('remove').html("&#215;").appendTo(member);
