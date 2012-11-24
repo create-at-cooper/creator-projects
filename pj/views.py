@@ -168,7 +168,11 @@ def dict_project(project, raw=False, user=None):
     else:
         project_dict['description'] = markdown.markdown(project.description)
 
-    if user and user.is_authenticated() and project in Project.objects.filter(members__user=user):
+# Projects are not editable for political reasons
+#    if user and user.is_authenticated() and project in Project.objects.filter(members__user=user):
+#        project_dict['editable'] = True
+
+    if user.is_superuser or user.is_staff:
         project_dict['editable'] = True
     
     return project_dict
@@ -267,9 +271,14 @@ def post_project(request):
             result['status'] = 'No project with id %s exists!' % project_id
             return HttpResponse(json.dumps(result), mimetype="application/json")
         
-        if request.user and project in Project.objects.filter(members__user=request.user):
+        if request.user.is_superuser or request.user.is_staff:
+            # staff can always edit
             pass
         else:
+#            if request.user and project in Project.objects.filter(members__user=request.user):
+#                # users can only edit projects they are a member of
+#                pass
+#            else:
             result['status'] = 'Permission denied.'
             return HttpResponse(json.dumps(result), mimetype="application/json")
     
