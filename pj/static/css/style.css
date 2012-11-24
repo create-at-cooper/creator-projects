@@ -487,8 +487,9 @@ div, input {
 	margin-right: 8pt;
 	
 	font-family: 'Source Sans Pro', sans-serif;
-	font-size: 16pt;
+	font-size: 12pt;
 	font-weight: 400;
+	line-height: 1.25;
 }
 
 .members {
