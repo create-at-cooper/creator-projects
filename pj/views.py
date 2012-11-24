@@ -317,17 +317,20 @@ def post_project(request):
         name = request.POST.get('member-name-' + str(i), '')
         contact = request.POST.get('member-contact-' + str(i), '')
         
-        if not name or not contact:
-            result['status'] = 'Missing contact information.'
+        if not name:
+            result['status'] = 'Missing contact name.'
             return HttpResponse(json.dumps(result), mimetype="application/json")
         
         # Make sure name and contact info are of a certain length.
         if len(name) < 3:
             result['status'] = 'Name "%s" is too short!' % (name, )
             return HttpResponse(json.dumps(result))
-        if len(contact) < 3:
-            result['status'] = 'Contact "%s" is too short!' % (contact, )
-            return HttpResponse(json.dumps(result), mimetype="application/json")
+        elif len(name) > 140:
+            result['status'] = 'Name "%s" is too long!' % (name, )
+            return HttpResponse(json.dumps(result))
+#        if len(contact) < 3:
+#            result['status'] = 'Contact "%s" is too short!' % (contact, )
+#            return HttpResponse(json.dumps(result), mimetype="application/json")
     
     # verify tags
     for i in range(0, int(request.POST.get('tags', '0'))):

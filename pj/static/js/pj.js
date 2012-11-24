@@ -58,15 +58,17 @@ function addProject(project, append) {
 		
 		$('<a>').addClass("name").attr("href", "?member=" + member.id).html(member.name).appendTo(memberDiv);
 		
-		var contact;
-		
-		if (member.contact.search("@") > 0 && member.contact.search("@") > 1) {
-			contact = $('<a>').attr("href", "mailto:" + member.contact);
-		} else {
-			contact = $('<a>').attr("href", member.contact);;
+		if (member.contact) {	
+			var contact;
+			
+			if (member.contact.search("@") > 0 && member.contact.search("@") > 1) {
+				contact = $('<a>').attr("href", "mailto:" + member.contact);
+			} else {
+				contact = $('<a>').attr("href", member.contact);;
+			}
+			
+			contact.addClass("contact").html(member.contact).appendTo(memberDiv);
 		}
-		
-		contact.addClass("contact").html(member.contact).appendTo(memberDiv);
 		
 		if (member.check == "possible") {
 			$('<div>').addClass('check').html("me!").click(function() {
@@ -387,14 +389,12 @@ function addMemberEvent(e) {
 	
 	var name = $('#member_name').val();
 	if (name.length < 2)
-		displayError("Member name is too short!");
+		displayError("Member name \"" + name + "\" is too short!");
 	else if (name.length > 140)
-		displayError("Member name is too long!");
+		displayError("Member name \"" + name + "\" is too long!");
 	
 	var contact = $('#member_contact').val();
-	if (contact.length < 3)
-		displayError("Member contact information is too short!");
-	else if (contact.length > 256)
+	if (contact.length > 256)
 		displayError("Member contact information is too long!");
 	
 	addMember(name, contact);
@@ -407,7 +407,7 @@ function addMemberEvent(e) {
 function getMembers() {
 	var members = [];
 	$('#members_list .member').each(function(i, div) {
-		if ($('.name', div).val() && $('.contact', div).val()) {
+		if ($('.name', div).val()/* && $('.contact', div).val()*/) {
 			members.push({
 				name: $('.name', div).val(),
 				contact: $('.contact', div).val()
@@ -668,15 +668,17 @@ $(function() {
 					
 					$('<a>').addClass("name").attr("href", "?member=" + member.id).html(member.name).appendTo(memberDiv);
 					
-					var contact;
-					
-					if (member.contact.search("@") > 0 && member.contact.search("@") > 1) {
-						contact = $('<a>').attr("href", "mailto:" + member.contact);
-					} else {
-						contact = $('<a>').attr("href", member.contact);;
+					if (member.contact) {
+						var contact;
+						
+						if (member.contact.search("@") > 0 && member.contact.search("@") > 1) {
+							contact = $('<a>').attr("href", "mailto:" + member.contact);
+						} else {
+							contact = $('<a>').attr("href", member.contact);;
+						}
+						
+						contact.addClass("contact").html(member.contact).appendTo(memberDiv);
 					}
-					
-					contact.addClass("contact").html(member.contact).appendTo(memberDiv);
 				});
 			});
 		}
@@ -803,10 +805,10 @@ $(function() {
 		var entry = $('<li>').data('item.autocomplete', item);
 		
 		if (item.contact) {
-			item.div = entry.append('<a href="?member=' + item.id + '"><span class="suggest member">' + item.name + ' (' + item.contact + ')</span></a>');
+			item.div = entry.append('<a href="' + item.url + '"><span class="suggest member">' + item.name + ' (' + item.contact + ')</span></a>');
 			item.div.appendTo(ul);
 		} else {
-			item.div = entry.append('<a href="?tag=' + item.name + '"><span class="suggest name">' + item.name + '</span></a>');
+			item.div = entry.append('<a href="' + item.url + '"><span class="suggest name">' + item.name + '</span></a>');
 			item.div.appendTo(ul);
 		}
 		

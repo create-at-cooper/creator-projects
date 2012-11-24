@@ -33,7 +33,7 @@ class Member(models.Model):
     user = models.ForeignKey(User, related_name='memberships', blank=True, null=True)
     name = models.CharField(max_length=140)
     # this could be email/website/twitter/linkedin
-    contact_info = models.CharField(max_length=256)
+    contact_info = models.CharField(max_length=256, blank=True, null=True)
     
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.contact_info)
