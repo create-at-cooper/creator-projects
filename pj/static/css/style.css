@@ -431,7 +431,16 @@ div, input {
 .images {
 	line-height: 1;
 	max-width: 1200px;
+	
 	display: inline-block;
+}
+
+.images.single {
+	display: block;
+	float: left;
+	
+	margin-right: 16pt;
+	margin-bottom: 16pt;
 }
 
 #projects {
@@ -439,6 +448,8 @@ div, input {
 }
 
 .tags {
+	clear: both;
+	
 	font-size: 20pt;	
 	font-family: 'Source Sans Pro', sans-serif;
 	font-weight: 400;
@@ -460,7 +471,7 @@ div, input {
 
 .image {
 	display: inline-block;
-	max-width: 320px;
+	max-width: 280px;
 	overflow: hidden;
 }
 .image:hover {
@@ -480,7 +491,6 @@ div, input {
 }
 
 .description {
-	display: inline-block;
 	vertical-align: top;
 	
 	margin-left: 8pt;

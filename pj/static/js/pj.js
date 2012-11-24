@@ -115,6 +115,9 @@ function addProject(project, append) {
 		image.div.data("image", image);
 	});
 	
+	if (project.images.length == 1)
+		images.addClass("single");
+	
 	projectDiv.append(images);
 	
 	$('<div>').addClass('description').html(project.description).appendTo(projectDiv);
