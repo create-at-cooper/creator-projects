@@ -262,6 +262,7 @@ def post_project(request):
     
     result = {'status' : 'OK'}
     
+    project = None
     project_id = request.POST.get('project_id', False)
     
     if project_id:
@@ -364,8 +365,7 @@ def post_project(request):
     try:
         description = request.POST.get('description', '')
         
-        if project_id:
-            project = Project.objects.get(pk=project_id)
+        if project:
             project.title = title
             project.description = description
             project.save()
