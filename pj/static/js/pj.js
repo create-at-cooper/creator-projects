@@ -116,6 +116,9 @@ function addProject(project, append) {
 		
 		images.append(image.div);
 		image.div.data("image", image);
+		
+		// Fix for chrome not displaying the image after it is downloaded
+		setTimeout(image.div.show, 200);
 	});
 	
 	projectDiv.append(images);
@@ -236,13 +239,6 @@ function loadProjects(before_id, append, callback) {
 		
 		$.each(data, function(i, project) {
 			addProject(project, append);
-		});
-		
-		// Fix for chrome not displaying images once they're downloaded
-		$.each(data, function(i, project) {
-			$.each(project.images, function(j, image) {
-				image.div.show();
-			});
 		});
 		
 		if ($.isFunction(callback))
