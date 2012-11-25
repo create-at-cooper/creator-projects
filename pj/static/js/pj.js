@@ -118,7 +118,7 @@ function addProject(project, append) {
 		image.div.data("image", image);
 		
 		// Fix for chrome not displaying the image after it is downloaded
-		setTimeout(image.div.show, 200);
+		setTimeout(image.div.show, 500);
 	});
 	
 	projectDiv.append(images);
