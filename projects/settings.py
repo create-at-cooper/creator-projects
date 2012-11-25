@@ -13,6 +13,7 @@ PROJECT_NAME = basename(ROOT_PATH)
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
+    ('Eric Leong', 'leong@cooper.edu'),
 )
 
 MANAGERS = ADMINS

@@ -95,8 +95,11 @@ function addProject(project, append) {
 	
 	var images = $("<div>").addClass("images");
 	
+	if (project.images.length == 1)
+		images.addClass("single");
+	
 	$.each(project.images, function(j, image) {		
-		image.div = $("<div>").addClass("image").css("width", 100 / project.images.length + "%").click(function(event) {
+		image.div = $('<div>').addClass("image").css("width", 100 / project.images.length + "%").click(function(event) {
 			event.preventDefault();
 			
 			if ($(this).hasClass('image-large')) {
@@ -109,14 +112,11 @@ function addProject(project, append) {
 			}
 		});
 		
-		$("<img>").attr("src", image.image).appendTo(image.div);
+		$('<img>').attr("src", image.image).appendTo(image.div);
 		
 		images.append(image.div);
 		image.div.data("image", image);
 	});
-	
-	if (project.images.length == 1)
-		images.addClass("single");
 	
 	projectDiv.append(images);
 	
@@ -236,6 +236,13 @@ function loadProjects(before_id, append, callback) {
 		
 		$.each(data, function(i, project) {
 			addProject(project, append);
+		});
+		
+		// Fix for chrome not displaying images once they're downloaded
+		$.each(data, function(i, project) {
+			$.each(project.images, function(j, image) {
+				image.div.show();
+			});
 		});
 		
 		if ($.isFunction(callback))

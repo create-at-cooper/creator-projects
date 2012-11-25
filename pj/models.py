@@ -23,10 +23,13 @@ class Project(models.Model):
         super(Project, self).save(*args, **kwargs)
     
     def get_absolute_url(self):
-        return "/project/%s/" % self.slug
+        return '?project=%d' % (self.pk, )
     
     def __unicode__(self):
-        return u"%s" % (self.title, )
+        return u'%s' % (self.title, )
+    
+    class Meta:
+        get_latest_by = 'created'
 
 class Member(models.Model):
     # we need some way of aggregating members
@@ -35,34 +38,45 @@ class Member(models.Model):
     # this could be email/website/twitter/linkedin
     contact_info = models.CharField(max_length=256, blank=True, null=True)
     
+    def get_absolute_url(self):
+        return '?member=%d' % (self.pk, )
+    
     def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.contact_info)
+        if self.contact_info:
+            return u'%s (%s)' % (self.name, self.contact_info)
+        return u'%s' % (self.name)
     
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     bio = models.TextField(blank=True)
     
     def __unicode__(self):
-        return u"%s's profile" % (self.user.username, )
+        return u'%s\'s profile' % (self.user.username, )
     
 class Tag(models.Model):
     name = models.CharField(max_length=30)
+    
+    def get_absolute_url(self):
+        return '?tag=%s' % (self.name, )
     
     def __unicode__(self):
         return u'%s' % (self.name, )
 
 class Image(models.Model):
-    project = models.ForeignKey(Project, related_name="images")
-    image = ImageField(upload_to="images")
+    project = models.ForeignKey(Project, related_name='images')
+    image = ImageField(upload_to='images')
+    
+    def get_absolute_url(self):
+        return self.image.url
     
     def __unicode__(self):
-        return u"%s: %s" % (self.project.title, self.image.name)
+        return u'%s: %s' % (self.project.title, self.image.name)
     
 def create_profile(sender, **kw):
     """Creates a user profile for each user (if they don't have one already)."""
-    user = kw["instance"]
-    if kw["created"]:
+    user = kw['instance']
+    if kw['created']:
         profile = UserProfile(user=user)
         profile.save()
 
-post_save.connect(create_profile, sender=User, dispatch_uid="users-profilecreation-signal")
+post_save.connect(create_profile, sender=User, dispatch_uid='users-profilecreation-signal')
