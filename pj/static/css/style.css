@@ -435,14 +435,16 @@ div, input {
 	display: inline-block;
 }
 
+.images:not(.single) {
+	width: 100%;
+}
+
 .images.single {
 	display: block;
 	float: left;
 	
 	margin-right: 16pt;
 	margin-bottom: 16pt;
-	
-	width: 100%;
 }
 
 #projects {

@@ -99,7 +99,7 @@ function addProject(project, append) {
 		images.addClass("single");
 	
 	$.each(project.images, function(j, image) {		
-		image.div = $('<div>').addClass("image").css("width", 100 / project.images.length + "%").click(function(event) {
+		image.div = $('<div>').addClass("image").click(function(event) {
 			event.preventDefault();
 			
 			if ($(this).hasClass('image-large')) {
@@ -111,6 +111,10 @@ function addProject(project, append) {
 				$(this).siblings().hide();
 			}
 		});
+		
+		if (project.images.length > 1) {
+			image.div.css("width", 100 / project.images.length + "%");
+		}
 		
 		$('<img>').attr("src", image.image).appendTo(image.div);
 		
