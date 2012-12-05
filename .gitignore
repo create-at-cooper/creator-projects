@@ -1,5 +1,5 @@
 *.pyc
-projects/dj.db
+*.db
 *.pydevproject
 *.project
 *.settings
