@@ -441,6 +441,8 @@ div, input {
 	
 	margin-right: 16pt;
 	margin-bottom: 16pt;
+	
+	width: 100%;
 }
 
 #projects {
