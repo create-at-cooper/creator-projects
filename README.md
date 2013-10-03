@@ -1,6 +1,6 @@
-cooper projects
+creator projects
 ==========
-A list of projects started by students at [The Cooper Union](http://cooper.edu) for [create@cooper](http://createatcooper.org). Check it out at [projects.createatcooper.org](http://projects.createatcooper.org).
+A directory for projects. Created for [create@cooper](http://createatcooper.org) for students at [The Cooper Union](http://cooper.edu). Check it out at [projects.createatcooper.org](http://projects.createatcooper.org).
 
 Setup
 -----
