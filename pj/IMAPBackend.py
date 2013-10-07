@@ -27,7 +27,8 @@ class IMAPBackend:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
             # Create a user in Django's local database
-            user = User.objects.create_user(username, username + '@cooper.edu', 'password')
+            user = User.objects.create_user(username, username + '@cooper.edu', '')
+            user.set_unusable_password()
 
         return user
 
